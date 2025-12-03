@@ -56,11 +56,12 @@ export function getBlogDates(
 ): { date: Date; updatedDate: Date | undefined } {
   const filePath = getBlogFilePath(slug);
   
-  // 优先用 Git 时间，兜底用 frontmatter，再兜底用当前时间
+  // 发布时间：优先用 frontmatter（允许手动控制排序），兜底用 Git 首次提交时间
   const gitCreated = getGitCreatedDate(filePath);
   const gitUpdated = getGitUpdatedDate(filePath);
   
-  const date = gitCreated ?? frontmatterDate ?? new Date();
+  const date = frontmatterDate ?? gitCreated ?? new Date();
+  // 更新时间：优先用 Git 最后提交时间，兜底用 frontmatter
   const updatedDate = gitUpdated ?? frontmatterUpdatedDate;
   
   // 如果更新时间和发布时间相差不到 1 分钟，认为没有更新
