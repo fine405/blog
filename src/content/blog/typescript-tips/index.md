@@ -74,4 +74,58 @@ logLength([1, 2, 3]); // OK
 logLength({ length: 10 }); // OK
 ```
 
+## satisfies 操作符
+
+TypeScript 4.9 引入的 `satisfies` 操作符，让你在保留精确类型推断的同时验证类型约束：
+
+```typescript
+type Colors = 'red' | 'green' | 'blue';
+type RGB = [number, number, number];
+
+// 使用类型注解：丢失了具体的字面量类型
+const palette1: Record<Colors, string | RGB> = {
+  red: [255, 0, 0],
+  green: '#00ff00',
+  blue: [0, 0, 255],
+};
+palette1.red.map(x => x); // ❌ 报错：string | RGB 没有 map 方法
+
+// 使用 satisfies：保留精确类型，同时验证结构
+const palette2 = {
+  red: [255, 0, 0],
+  green: '#00ff00',
+  blue: [0, 0, 255],
+} satisfies Record<Colors, string | RGB>;
+
+palette2.red.map(x => x);      // ✅ OK，red 被推断为 [number, number, number]
+palette2.green.toUpperCase();  // ✅ OK，green 被推断为 string
+```
+
+### 常见用途
+
+```typescript
+// 1. 配置对象验证
+interface Config {
+  apiUrl: string;
+  timeout: number;
+  retries?: number;
+}
+
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+  retries: 3,
+} satisfies Config;
+
+// 2. 确保对象键的完整性
+type Routes = 'home' | 'about' | 'contact';
+
+const routes = {
+  home: '/',
+  about: '/about',
+  contact: '/contact',
+} satisfies Record<Routes, string>;
+// 如果漏掉任何一个路由，TypeScript 会报错
+```
+
 掌握这些技巧，能让你的 TypeScript 代码更加优雅和类型安全。
