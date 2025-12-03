@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))];
+  
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.filter((post) => post.data.tags?.includes(tag))
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`${tag} - Fine`}>
+  <header class="page-header">
+    <a href="/tags" class="back">← 所有标签</a>
+    <h1>#{tag}</h1>
+    <p>{posts.length} 篇文章</p>
+  </header>
+
+  <ul class="post-list">
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.slug}`}>
+          <article>
+            <h2>{post.data.title}</h2>
+            <p class="meta">
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('zh-CN')}
+              </time>
+            </p>
+            <p class="excerpt">{post.data.description}</p>
+          </article>
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 2rem;
+  }
+
+  .back {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--accent);
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    margin: 0.5rem 0;
+  }
+
+  .page-header p {
+    color: var(--text-secondary);
+  }
+
+  .post-list {
+    list-style: none;
+  }
+
+  .post-list li {
+    margin-bottom: 1rem;
+  }
+
+  .post-list a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .post-list a:hover {
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+  }
+
+  .post-list h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .excerpt {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+</style>

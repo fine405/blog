@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
+---
+
+<BaseLayout title="标签 - Fine">
+  <h1>所有标签</h1>
+  <ul class="tag-list">
+    {tags.map((tag) => {
+      const count = posts.filter((post) => post.data.tags?.includes(tag)).length;
+      return (
+        <li>
+          <a href={`/tags/${tag}`}>
+            {tag}
+            <span class="count">{count}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .tag-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tag-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.2s;
+  }
+
+  .tag-list a:hover {
+    background: var(--border);
+  }
+
+  .count {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+</style>
