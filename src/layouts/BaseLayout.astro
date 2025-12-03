@@ -50,6 +50,17 @@ const {
       <header>
         <nav>
           <a href="/" class="logo">Fine</a>
+          <button id="menu-toggle" class="menu-toggle" aria-label="菜单">
+            <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
           <div class="nav-links">
             <a href="/">首页</a>
             <a href="/blog">文章</a>
@@ -110,9 +121,27 @@ const {
       }
       setupThemeToggle();
 
+      function setupMenuToggle() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        menuToggle?.addEventListener('click', () => {
+          navLinks?.classList.toggle('open');
+          menuToggle.classList.toggle('open');
+        });
+        // 点击链接后关闭菜单
+        navLinks?.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+            navLinks.classList.remove('open');
+            menuToggle?.classList.remove('open');
+          });
+        });
+      }
+      setupMenuToggle();
+
       document.addEventListener('astro:after-swap', () => {
         initTheme();
         setupThemeToggle();
+        setupMenuToggle();
       });
     </script>
   </body>
@@ -179,6 +208,27 @@ const {
     text-decoration: none;
   }
 
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    padding: 0.25rem;
+  }
+
+  .menu-toggle .close-icon {
+    display: none;
+  }
+
+  .menu-toggle.open .menu-icon {
+    display: none;
+  }
+
+  .menu-toggle.open .close-icon {
+    display: block;
+  }
+
   .nav-links {
     display: flex;
     align-items: center;
@@ -200,6 +250,48 @@ const {
   .github-link {
     display: flex;
     align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .menu-toggle {
+      display: flex;
+      align-items: center;
+      z-index: 101;
+    }
+
+    .nav-links {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      flex-direction: column;
+      justify-content: center;
+      gap: 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      z-index: 100;
+    }
+
+    .nav-links.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-links a {
+      font-size: 1.25rem;
+    }
+
+    .nav-links .rss-link,
+    .nav-links .github-link {
+      justify-content: center;
+    }
+
+    .nav-links #theme-toggle {
+      margin-top: 1rem;
+    }
   }
 
   #theme-toggle {
