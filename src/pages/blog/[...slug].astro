@@ -14,7 +14,14 @@ const { post } = Astro.props;
 const { Content } = await post.render();
 ---
 
-<BaseLayout title={`${post.data.title} - Fine`} description={post.data.description}>
+<BaseLayout 
+  title={`${post.data.title} - Fine`} 
+  description={post.data.description}
+  image={post.data.cover?.url}
+  type="article"
+  publishedTime={post.data.date}
+  tags={post.data.tags}
+>
   <article class="post">
    
     <header>
