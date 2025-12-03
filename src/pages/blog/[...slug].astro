@@ -35,6 +35,26 @@ const { Content } = await post.render();
     <footer>
       <a href="/blog">← 返回文章列表</a>
     </footer>
+
+    <section class="comments">
+      <h2>评论</h2>
+      <script
+        src="https://giscus.app/client.js"
+        data-repo="fine405/fine405.github.io"
+        data-repo-id="R_kgDOQhlUWQ"
+        data-category="General"
+        data-category-id="DIC_kwDOQhlUWc4CzVPI"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async
+      ></script>
+    </section>
   </article>
 </BaseLayout>
 
@@ -116,5 +136,16 @@ const { Content } = await post.render();
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
+  }
+
+  .comments {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .comments h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 </style>
