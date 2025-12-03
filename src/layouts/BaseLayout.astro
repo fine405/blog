@@ -1,5 +1,6 @@
 ---
 import SEO from '../components/SEO.astro';
+import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
   title: string;
@@ -42,6 +43,7 @@ const {
       tags={tags}
     />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body>
     <div class="container">
@@ -87,14 +89,25 @@ const {
       </footer>
     </div>
     <script is:inline>
-      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-      
-      document.getElementById('theme-toggle')?.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
+      function initTheme() {
+        const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+      initTheme();
+
+      function setupThemeToggle() {
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+          const current = document.documentElement.getAttribute('data-theme');
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          localStorage.setItem('theme', next);
+        });
+      }
+      setupThemeToggle();
+
+      document.addEventListener('astro:after-swap', () => {
+        initTheme();
+        setupThemeToggle();
       });
     </script>
   </body>
