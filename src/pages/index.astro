@@ -1,10 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { getBlogDates } from '../utils/git-dates';
 
-const posts = (await getCollection('blog')).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
-).slice(0, 5);
+const rawPosts = await getCollection('blog', ({ data }) => {
+  return import.meta.env.DEV || !data.draft;
+});
+
+// 为每篇文章计算 Git 时间
+const posts = rawPosts.map((post) => {
+  const { date, updatedDate } = getBlogDates(post.slug, post.data.date, post.data.updatedDate);
+  return { ...post, date, updatedDate };
+}).sort((a, b) => {
+  // 按更新时间或发布时间排序
+  const aTime = (a.updatedDate ?? a.date).valueOf();
+  const bTime = (b.updatedDate ?? b.date).valueOf();
+  return bTime - aTime;
+}).slice(0, 5);
 ---
 
 <BaseLayout title="Fine - 博客">
@@ -22,8 +34,8 @@ const posts = (await getCollection('blog')).sort(
             <article>
               <h3>{post.data.title}</h3>
               <p class="meta">
-                <time datetime={post.data.date.toISOString()}>
-                  {post.data.date.toLocaleDateString('zh-CN')}
+                <time datetime={post.date.toISOString()}>
+                  {post.date.toLocaleDateString('zh-CN')}
                 </time>
                 {post.data.tags && (
                   <span class="tags">
