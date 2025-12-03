@@ -13,24 +13,6 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await post.render();
-
-// 相对时间格式化
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes} 分钟前`;
-  if (hours < 24) return `${hours} 小时前`;
-  if (days < 30) return `${days} 天前`;
-  if (days < 365) return `${Math.floor(days / 30)} 个月前`;
-  return `${Math.floor(days / 365)} 年前`;
-}
-
-const relativeUpdatedTime = post.data.updatedDate ? formatRelativeTime(post.data.updatedDate) : null;
 ---
 
 <BaseLayout 
@@ -48,12 +30,15 @@ const relativeUpdatedTime = post.data.updatedDate ? formatRelativeTime(post.data
       <h1>{post.data.title}</h1>
       <div class="meta">
         <span class="time-info">
-          <time datetime={post.data.date.toISOString()}>
-            发布于 {post.data.date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          <time datetime={post.data.date.toISOString()} class="publish-time">
+            发布于 <span class="local-time"></span>
           </time>
           {post.data.updatedDate && (
-            <span class="updated" title={post.data.updatedDate.toLocaleString('zh-CN')}>
-              · {relativeUpdatedTime}更新
+            <span 
+              class="updated" 
+              data-updated={post.data.updatedDate.toISOString()}
+            >
+              · <span class="relative-time"></span>更新
             </span>
           )}
         </span>
@@ -74,6 +59,60 @@ const relativeUpdatedTime = post.data.updatedDate ? formatRelativeTime(post.data
       <Content />
     </div>
     <ImageLightbox />
+
+    <script is:inline>
+      (function() {
+        function formatRelativeTime(date) {
+          const now = new Date();
+          const diff = now.getTime() - date.getTime();
+          const minutes = Math.floor(diff / 60000);
+          const hours = Math.floor(diff / 3600000);
+          const days = Math.floor(diff / 86400000);
+          
+          if (minutes < 1) return '刚刚';
+          if (minutes < 60) return minutes + ' 分钟前';
+          if (hours < 24) return hours + ' 小时前';
+          if (days < 30) return days + ' 天前';
+          if (days < 365) return Math.floor(days / 30) + ' 个月前';
+          return Math.floor(days / 365) + ' 年前';
+        }
+
+        function formatLocalTime(date) {
+          return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function updateTimes() {
+          // 更新发布时间
+          var timeEl = document.querySelector('.publish-time');
+          if (timeEl) {
+            var dateStr = timeEl.getAttribute('datetime');
+            var localTimeEl = timeEl.querySelector('.local-time');
+            if (dateStr && localTimeEl) {
+              localTimeEl.textContent = formatLocalTime(new Date(dateStr));
+            }
+          }
+          // 更新相对时间和 title
+          var updatedEl = document.querySelector('.updated[data-updated]');
+          if (updatedEl) {
+            var updateDateStr = updatedEl.getAttribute('data-updated');
+            if (updateDateStr) {
+              var updateDate = new Date(updateDateStr);
+              updatedEl.setAttribute('title', formatLocalTime(updateDate));
+              var relativeTimeEl = updatedEl.querySelector('.relative-time');
+              if (relativeTimeEl) {
+                relativeTimeEl.textContent = formatRelativeTime(updateDate);
+              }
+            }
+          }
+        }
+
+        // 立即执行
+        updateTimes();
+        // View Transitions 路由切换后重新执行
+        document.addEventListener('astro:page-load', updateTimes);
+      })();
+    </script>
+
     <footer>
       <a href="/blog">← 返回文章列表</a>
     </footer>
