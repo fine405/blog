@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="关于 - Fine">
+  <article class="about">
+    <h1>关于我</h1>
+    <p>
+      你好！我是一名热爱技术的开发者，专注于 Web 开发和软件工程。
+    </p>
+    <p>
+      这个博客是我记录学习历程、分享技术心得的地方。我相信写作是最好的学习方式之一，
+      通过整理和输出知识，能够加深对技术的理解。
+    </p>
+    
+    <h2>技术栈</h2>
+    <ul>
+      <li>前端：TypeScript, React, Vue, Astro</li>
+      <li>后端：Node.js, Python, Go</li>
+      <li>数据库：PostgreSQL, MongoDB, Redis</li>
+      <li>DevOps：Docker, Kubernetes, CI/CD</li>
+    </ul>
+
+    <h2>联系方式</h2>
+    <p>
+      如果你有任何问题或想法，欢迎通过以下方式联系我：
+    </p>
+    <ul>
+      <li>GitHub: <a href="https://github.com/fine405" target="_blank">@fine405</a></li>
+      <li>Email: 18224017933@163.com</li>
+    </ul>
+  </article>
+</BaseLayout>
+
+<style>
+  .about h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .about h2 {
+    font-size: 1.25rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .about p {
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .about ul {
+    padding-left: 1.5rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+
+  .about li {
+    margin-bottom: 0.5rem;
+  }
+</style>

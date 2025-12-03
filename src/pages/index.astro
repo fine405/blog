@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+).slice(0, 5);
+---
+
+<BaseLayout title="Fine - 技术博客">
+  <section class="hero">
+    <h1>你好，我是 Fine 👋</h1>
+    <p>这里记录我的技术学习与思考，分享开发中的经验与心得。</p>
+  </section>
+
+  <section class="posts">
+    <h2>最新文章</h2>
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.slug}`}>
+            <article>
+              <h3>{post.data.title}</h3>
+              <p class="meta">
+                <time datetime={post.data.date.toISOString()}>
+                  {post.data.date.toLocaleDateString('zh-CN')}
+                </time>
+                {post.data.tags && (
+                  <span class="tags">
+                    {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+                  </span>
+                )}
+              </p>
+              <p class="excerpt">{post.data.description}</p>
+            </article>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <a href="/blog" class="view-all">查看全部文章 →</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 3rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+
+  .posts {
+    padding: 2rem 0;
+  }
+
+  .posts h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-list {
+    list-style: none;
+  }
+
+  .post-list li {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-list a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .post-list a:hover {
+    background: var(--bg-secondary);
+  }
+
+  .post-list h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background: var(--bg-secondary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .excerpt {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .view-all {
+    display: inline-block;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+  }
+</style>
