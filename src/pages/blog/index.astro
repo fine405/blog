@@ -2,7 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog')).sort(
+const posts = (await getCollection('blog', ({ data }) => {
+  // 开发环境显示所有文章，生产环境隐藏草稿
+  return import.meta.env.DEV || !data.draft;
+})).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 ---
