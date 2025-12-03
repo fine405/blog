@@ -51,11 +51,6 @@ const posts = rawPosts.map((post) => {
                   · <span class="relative-time"></span>更新
                 </span>
               )}
-              {post.data.tags && (
-                <span class="tags">
-                  {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-                </span>
-              )}
             </p>
             <p class="excerpt">{post.data.description}</p>
           </article>
@@ -121,18 +116,6 @@ const posts = rawPosts.map((post) => {
   .updated {
     color: var(--accent);
     cursor: help;
-  }
-
-  .tags {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    background: var(--bg-secondary);
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
   }
 
   .excerpt {
