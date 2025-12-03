@@ -11,6 +11,8 @@ const blog = defineCollection({
     // date 和 updatedDate 现在是可选的，会自动从 Git 提交时间获取
     date: dateTimeSchema.optional(),
     updatedDate: dateTimeSchema.optional(),
+    // 禁用更新时间显示，排序时只用发布时间
+    disableUpdateDate: z.boolean().optional().default(false),
     tags: z.array(z.string()).optional(),
     draft: z.boolean().optional().default(false),
     cover: z.object({

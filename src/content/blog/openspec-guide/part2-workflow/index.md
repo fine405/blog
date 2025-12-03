@@ -2,6 +2,7 @@
 title: "OpenSpec 完整指南（二）：工作流详解与命令参考"
 description: "深入了解 OpenSpec 的完整工作流：从起草变更提案、审查规格、实现任务到归档变更，掌握每个环节的操作方法和命令。"
 date: 2025-12-03T18:30+08:00
+disableUpdateDate: true
 tags: ["OpenSpec", "AI 编程", "SDD", "开发工具"]
 ---
 

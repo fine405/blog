@@ -2,6 +2,7 @@
 title: "OpenSpec 完整指南（一）：为什么 AI 编程需要规格驱动开发（SDD）"
 description: "AI 编程助手很强大，但需求散落在聊天记录中时往往不可预测。OpenSpec 通过规格驱动开发，让人类和 AI 在写代码前先达成共识。"
 date: 2025-12-03T18:00+08:00
+disableUpdateDate: true
 tags: ["OpenSpec", "AI 编程", "SDD", "开发工具"]
 ---
 

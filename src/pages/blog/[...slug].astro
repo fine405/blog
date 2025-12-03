@@ -16,7 +16,12 @@ const { post } = Astro.props;
 const { Content, remarkPluginFrontmatter } = await post.render();
 
 // 使用 Git 时间
-const { date, updatedDate } = getBlogDates(post.slug, post.data.date, post.data.updatedDate);
+const { date, updatedDate } = getBlogDates(
+  post.slug,
+  post.data.date,
+  post.data.updatedDate,
+  post.data.disableUpdateDate
+);
 
 // 计算阅读时间（中文约 300 字/分钟）
 const wordCount = post.body.length;

@@ -9,7 +9,12 @@ const rawPosts = await getCollection('blog', ({ data }) => {
 
 // 为每篇文章计算 Git 时间
 const posts = rawPosts.map((post) => {
-  const { date, updatedDate } = getBlogDates(post.slug, post.data.date, post.data.updatedDate);
+  const { date, updatedDate } = getBlogDates(
+    post.slug,
+    post.data.date,
+    post.data.updatedDate,
+    post.data.disableUpdateDate
+  );
   return { ...post, date, updatedDate };
 }).sort((a, b) => {
   // 按更新时间或发布时间排序

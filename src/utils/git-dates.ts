@@ -52,7 +52,8 @@ export function getBlogFilePath(slug: string): string {
 export function getBlogDates(
   slug: string,
   frontmatterDate?: Date,
-  frontmatterUpdatedDate?: Date
+  frontmatterUpdatedDate?: Date,
+  disableUpdateDate?: boolean
 ): { date: Date; updatedDate: Date | undefined } {
   const filePath = getBlogFilePath(slug);
   
@@ -61,6 +62,12 @@ export function getBlogDates(
   const gitUpdated = getGitUpdatedDate(filePath);
   
   const date = frontmatterDate ?? gitCreated ?? new Date();
+  
+  // 如果禁用更新时间，直接返回
+  if (disableUpdateDate) {
+    return { date, updatedDate: undefined };
+  }
+  
   // 更新时间：优先用 Git 最后提交时间，兜底用 frontmatter
   const updatedDate = gitUpdated ?? frontmatterUpdatedDate;
   

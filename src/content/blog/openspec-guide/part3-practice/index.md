@@ -1,7 +1,8 @@
 ---
 title: "OpenSpec 完整指南（三）：实战技巧与最佳实践"
 description: "探讨 OpenSpec 在团队协作中的实战应用，与 spec-kit、Kiro 等工具的对比，以及提升效率的进阶技巧。"
-date: 2025-12-03T19:00+08:00
+date: 2025-12-03T18:40+08:00
+disableUpdateDate: true
 tags: ["OpenSpec", "AI 编程", "SDD", "开发工具"]
 ---
 
