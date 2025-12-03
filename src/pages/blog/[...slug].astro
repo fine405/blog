@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import ImageLightbox from '../../components/ImageLightbox.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -72,6 +73,7 @@ const relativeUpdatedTime = post.data.updatedDate ? formatRelativeTime(post.data
     <div class="content">
       <Content />
     </div>
+    <ImageLightbox />
     <footer>
       <a href="/blog">← 返回文章列表</a>
     </footer>

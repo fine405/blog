@@ -17,6 +17,9 @@ importers:
       astro:
         specifier: ^5.16.3
         version: 5.16.3(@types/node@24.10.1)(rollup@4.53.3)(typescript@5.9.3)
+      glightbox:
+        specifier: ^3.3.1
+        version: 3.3.1
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
@@ -838,6 +841,9 @@ packages:
 
   github-slugger@2.0.0:
     resolution: {integrity: sha512-IaOQ9puYtjrkq7Y0Ygl9KDZnrf/aiUJYUpVf89y8kyaxbRG7Y1SrX/jaumrv81vc61+kiMempujsM3Yw7w5qcw==}
+
+  glightbox@3.3.1:
+    resolution: {integrity: sha512-nXoKfJRnQTDaAFAw5799hjpfAAHx5aLvOLG0SIGudeMCwtHgO3P2/avNYapJ+SL4UEZxO2YNBPtq6pzMhSx42g==}
 
   h3@1.15.4:
     resolution: {integrity: sha512-z5cFQWDffyOe4vQ9xIqNfCZdV4p//vy6fBnr8Q1AWnVZ0teurKMG66rLj++TKwKPUP3u7iMUvrvKaEUiQw2QWQ==}
@@ -2311,6 +2317,8 @@ snapshots:
   get-east-asian-width@1.4.0: {}
 
   github-slugger@2.0.0: {}
+
+  glightbox@3.3.1: {}
 
   h3@1.15.4:
     dependencies:

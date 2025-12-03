@@ -1,0 +1,73 @@
+---
+// 图片 Lightbox 组件 - 支持全屏、下载、左右导航
+---
+
+<script>
+  import GLightbox from 'glightbox';
+  import 'glightbox/dist/css/glightbox.min.css';
+
+  document.addEventListener('astro:page-load', () => {
+    // 获取文章内容区域的所有图片
+    const contentImages = document.querySelectorAll('.content img');
+    
+    contentImages.forEach((img, index) => {
+      // 添加 glightbox class 和 data 属性
+      img.classList.add('glightbox');
+      img.setAttribute('data-gallery', 'post-images');
+      img.style.cursor = 'zoom-in';
+    });
+
+    // 初始化 GLightbox
+    if (contentImages.length > 0) {
+      GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        descPosition: 'bottom',
+        svg: {
+          close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+          prev: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+          next: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>',
+        },
+      });
+    }
+  });
+</script>
+
+<style is:global>
+  /* 自定义 GLightbox 样式 */
+  .goverlay {
+    background: rgba(0, 0, 0, 0.92) !important;
+  }
+
+  .gslide-description {
+    background: transparent !important;
+  }
+
+  .gdesc-inner {
+    padding: 1rem !important;
+    color: #fff !important;
+  }
+
+  .gclose, .gnext, .gprev {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .gclose:hover, .gnext:hover, .gprev:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .gslide-image img {
+    max-height: 90vh !important;
+  }
+
+  /* 图片计数器 */
+  .gslide-title {
+    font-size: 0.9rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+</style>
