@@ -18,7 +18,11 @@ const posts = rawPosts.map((post) => {
   );
   return { ...post, date, updatedDate };
 }).sort((a, b) => {
-  // 优先按更新时间排序，没有更新时间则按发布时间
+  // 置顶文章优先，数字越大越靠前
+  const aPinned = a.data.pinned ?? 0;
+  const bPinned = b.data.pinned ?? 0;
+  if (aPinned !== bPinned) return bPinned - aPinned;
+  // 然后按更新时间排序，没有更新时间则按发布时间
   const aTime = (a.updatedDate ?? a.date).valueOf();
   const bTime = (b.updatedDate ?? b.date).valueOf();
   if (bTime !== aTime) return bTime - aTime;
@@ -32,9 +36,12 @@ const posts = rawPosts.map((post) => {
   <ul class="post-list">
     {posts.map((post) => (
       <li>
-        <a href={`/blog/${post.slug}`}>
+        <a href={`/blog/${post.slug}`} class:list={[{ pinned: post.data.pinned }]}>
           <article>
-            <h2>{post.data.title}</h2>
+            <h2>
+              {post.data.pinned && <span class="pin-icon">📌</span>}
+              {post.data.title}
+            </h2>
             <p class="meta">
               <time datetime={post.date.toISOString()} class="publish-time">
                 发布于 <span class="local-time"></span>
@@ -85,6 +92,15 @@ const posts = rawPosts.map((post) => {
   .post-list a:hover {
     border-color: var(--accent);
     background: var(--bg-secondary);
+  }
+
+  .post-list a.pinned {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+  }
+
+  .pin-icon {
+    margin-right: 0.25rem;
   }
 
   .post-list h2 {

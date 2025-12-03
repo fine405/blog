@@ -3,6 +3,7 @@ title: "OpenSpec 完整指南（一）：为什么 AI 编程需要规格驱动�
 description: "AI 编程助手很强大，但需求散落在聊天记录中时往往不可预测。OpenSpec 通过规格驱动开发，让人类和 AI 在写代码前先达成共识。"
 date: 2025-12-03T18:15+08:00
 disableUpdateDate: true
+pinned: 10
 tags: ["OpenSpec", "AI 编程", "SDD", "开发工具"]
 ---
 
@@ -72,15 +73,7 @@ OpenSpec 使用两个核心文件夹：
 
 OpenSpec 支持几乎所有主流 AI 编程工具：
 
-| 原生斜杠命令支持 | AGENTS.md 兼容 |
-|----------------|---------------|
-| Claude Code | Amp |
-| Cursor | Jules |
-| GitHub Copilot | 其他 |
-| Windsurf | |
-| RooCode | |
-| Cline | |
-| ... | |
+https://github.com/Fission-AI/OpenSpec?tab=readme-ov-file#supported-ai-tools
 
 不同团队成员可以用不同的工具，但共享同一套规格。
 

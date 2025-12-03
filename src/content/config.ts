@@ -15,6 +15,8 @@ const blog = defineCollection({
     disableUpdateDate: z.boolean().optional().default(false),
     tags: z.array(z.string()).optional(),
     draft: z.boolean().optional().default(false),
+    // 置顶文章，数字越大越靠前
+    pinned: z.number().optional(),
     cover: z.object({
       url: z.string(),
       alt: z.string().optional(),
