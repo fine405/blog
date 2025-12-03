@@ -1,7 +1,7 @@
 ---
 title: "Hello World - 博客开张"
 description: "这是我的第一篇博客文章，记录博客搭建的过程和一些思考。"
-date: 2024-12-03
+date: 2025-12-03T09:00
 tags: ["随笔", "Astro"]
 ---
 

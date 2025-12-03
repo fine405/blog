@@ -1,7 +1,7 @@
 ---
 title: "TypeScript 实用技巧分享"
 description: "分享一些日常开发中常用的 TypeScript 技巧，提升代码质量和开发效率。"
-date: 2024-12-02
+date: 2025-12-02T14:30
 tags: ["TypeScript", "前端"]
 ---
 

@@ -12,6 +12,24 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await post.render();
+
+// 相对时间格式化
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  if (hours < 24) return `${hours} 小时前`;
+  if (days < 30) return `${days} 天前`;
+  if (days < 365) return `${Math.floor(days / 30)} 个月前`;
+  return `${Math.floor(days / 365)} 年前`;
+}
+
+const relativeUpdatedTime = post.data.updatedDate ? formatRelativeTime(post.data.updatedDate) : null;
 ---
 
 <BaseLayout 
@@ -20,22 +38,30 @@ const { Content } = await post.render();
   image={post.data.cover?.url}
   type="article"
   publishedTime={post.data.date}
+  modifiedTime={post.data.updatedDate}
   tags={post.data.tags}
 >
   <article class="post">
    
     <header>
       <h1>{post.data.title}</h1>
-      <p class="meta">
-        <time datetime={post.data.date.toISOString()}>
-          {post.data.date.toLocaleDateString('zh-CN')}
-        </time>
+      <div class="meta">
+        <span class="time-info">
+          <time datetime={post.data.date.toISOString()}>
+            发布于 {post.data.date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          </time>
+          {post.data.updatedDate && (
+            <span class="updated" title={post.data.updatedDate.toLocaleString('zh-CN')}>
+              · {relativeUpdatedTime}更新
+            </span>
+          )}
+        </span>
         {post.data.tags && (
           <span class="tags">
             {post.data.tags.map((tag: string) => <a href={`/tags/${tag}`} class="tag">{tag}</a>)}
           </span>
         )}
-      </p>
+      </div>
     </header>
      {post.data.cover && (
       <figure class="cover">
@@ -105,11 +131,23 @@ const { Content } = await post.render();
   }
 
   .meta {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.75rem;
+  }
+
+  .time-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .time-info .updated {
+    color: var(--accent);
+    cursor: help;
   }
 
   .tags {
@@ -169,8 +207,33 @@ const { Content } = await post.render();
 
   .content :global(img) {
     max-width: 100%;
+    height: auto;
     border-radius: 8px;
     margin: 1.5rem 0;
+    display: block;
+  }
+
+  .content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .content :global(th),
+  .content :global(td) {
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .content :global(th) {
+    background: var(--bg-secondary);
+    font-weight: 600;
+  }
+
+  .content :global(tr:hover) {
+    background: var(--bg-secondary);
   }
 
   .post footer {

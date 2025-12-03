@@ -2,12 +2,33 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
+// 相对时间格式化
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  if (hours < 24) return `${hours} 小时前`;
+  if (days < 30) return `${days} 天前`;
+  if (days < 365) return `${Math.floor(days / 30)} 个月前`;
+  return `${Math.floor(days / 365)} 年前`;
+}
+
 const posts = (await getCollection('blog', ({ data }) => {
   // 开发环境显示所有文章，生产环境隐藏草稿
   return import.meta.env.DEV || !data.draft;
-})).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
-);
+})).sort((a, b) => {
+  // 优先按更新时间排序，没有更新时间则按发布时间
+  const aTime = (a.data.updatedDate ?? a.data.date).valueOf();
+  const bTime = (b.data.updatedDate ?? b.data.date).valueOf();
+  if (bTime !== aTime) return bTime - aTime;
+  // 日期相同时按标题字母顺序
+  return a.data.title.localeCompare(b.data.title, 'zh-CN');
+});
 ---
 
 <BaseLayout title="文章列表 - Fine">
@@ -20,8 +41,13 @@ const posts = (await getCollection('blog', ({ data }) => {
             <h2>{post.data.title}</h2>
             <p class="meta">
               <time datetime={post.data.date.toISOString()}>
-                {post.data.date.toLocaleDateString('zh-CN')}
+                发布于 {post.data.date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
               </time>
+              {post.data.updatedDate && (
+                <span class="updated" title={post.data.updatedDate.toLocaleString('zh-CN')}>
+                  · {formatRelativeTime(post.data.updatedDate)}更新
+                </span>
+              )}
               {post.data.tags && (
                 <span class="tags">
                   {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
@@ -76,8 +102,13 @@ const posts = (await getCollection('blog', ({ data }) => {
     color: var(--text-secondary);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     margin-bottom: 0.5rem;
+  }
+
+  .updated {
+    color: var(--accent);
+    cursor: help;
   }
 
   .tags {
