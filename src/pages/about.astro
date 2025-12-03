@@ -29,6 +29,66 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <li>GitHub: <a href="https://github.com/fine405" target="_blank">@fine405</a></li>
       <li>Email: 18224017933@163.com</li>
     </ul>
+
+    <h2>博客特性</h2>
+    <div class="features">
+      <div class="feature">
+        <span class="icon">🚀</span>
+        <div>
+          <h3>Astro 驱动</h3>
+          <p>基于 Astro 构建，静态生成带来极致性能</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">🏷️</span>
+        <div>
+          <h3>标签分类</h3>
+          <p>文章按标签归类，快速找到感兴趣的内容</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">📅</span>
+        <div>
+          <h3>Git 时间追踪</h3>
+          <p>自动从 Git 提交记录获取发布和更新时间</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">🖼️</span>
+        <div>
+          <h3>图片灯箱</h3>
+          <p>点击图片全屏预览，支持左右导航浏览</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">📡</span>
+        <div>
+          <h3>RSS 订阅</h3>
+          <p>支持 RSS Feed，用你喜欢的阅读器订阅</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">🔍</span>
+        <div>
+          <h3>SEO 优化</h3>
+          <p>完善的 Open Graph 和结构化数据支持</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">💬</span>
+        <div>
+          <h3>Giscus 评论</h3>
+          <p>基于 GitHub Discussions 的评论系统</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="icon">🌓</span>
+        <div>
+          <h3>主题切换</h3>
+          <p>支持亮色/暗色主题，自动跟随系统偏好</p>
+        </div>
+      </div>
+    </div>
   </article>
 </BaseLayout>
 
@@ -57,5 +117,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .about li {
     margin-bottom: 0.5rem;
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+
+  .feature {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    transition: transform 0.2s;
+  }
+
+  .feature:hover {
+    transform: translateY(-2px);
+  }
+
+  .feature .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .feature h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .feature p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
   }
 </style>
