@@ -5,11 +5,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <BaseLayout title="关于 - Fine">
   <article class="about">
     <h1>关于我</h1>
-    <p>
-      你好！我是一名热爱技术的开发者，专注于 Web 开发和软件工程。
+    <p class="tagline">
+      <span class="highlight">Vibe Coding Engineer</span> · 在 AI 浪潮中寻找人机协作的最佳节奏
     </p>
     <p>
-      这个博客是我记录学习历程、分享技术心得的地方。我相信写作是最好的学习方式之一，
+      这个博客是我记录学习历程、分享技术心得的地方。写作是最好的学习方式之一，
       通过整理和输出知识，能够加深对技术的理解。
     </p>
     
@@ -107,6 +107,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     line-height: 1.8;
     margin-bottom: 1rem;
     color: var(--text-secondary);
+  }
+
+  .tagline {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  .tagline .highlight {
+    background: linear-gradient(
+      135deg,
+      #667eea,
+      #764ba2,
+      #f093fb,
+      #667eea
+    );
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   .about ul {
