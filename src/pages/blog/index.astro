@@ -32,10 +32,21 @@ const posts = rawPosts.map((post) => {
 ---
 
 <BaseLayout title="文章列表 - Fine">
-  <h1>所有文章</h1>
-  <ul class="post-list">
+  <div class="page-header">
+    <h1>所有文章</h1>
+    <div class="sort-toggle" role="group" aria-label="排序方式">
+      <button class="sort-btn active" data-sort="updated">最近更新</button>
+      <button class="sort-btn" data-sort="published">发布时间</button>
+    </div>
+  </div>
+  <ul class="post-list" id="post-list">
     {posts.map((post) => (
-      <li>
+      <li 
+        data-pinned={post.data.pinned ?? 0}
+        data-published={post.date.valueOf()}
+        data-updated={(post.updatedDate ?? post.date).valueOf()}
+        data-title={post.data.title}
+      >
         <a href={`/blog/${post.slug}`} class:list={[{ pinned: post.data.pinned }]}>
           <article>
             <h2>
@@ -61,9 +72,47 @@ const posts = rawPosts.map((post) => {
 </BaseLayout>
 
 <style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
   h1 {
     font-size: 1.75rem;
-    margin-bottom: 2rem;
+    margin: 0;
+  }
+
+  .sort-toggle {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg-secondary);
+    padding: 0.25rem;
+    border-radius: 6px;
+  }
+
+  .sort-btn {
+    padding: 0.4rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sort-btn:hover {
+    color: var(--text);
+  }
+
+  .sort-btn.active {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .post-list {
@@ -127,6 +176,8 @@ const posts = rawPosts.map((post) => {
 
 <script is:inline>
   (function() {
+    var SORT_KEY = 'blog-sort-preference';
+
     function formatRelativeTime(date) {
       var now = new Date();
       var diff = now.getTime() - date.getTime();
@@ -147,7 +198,6 @@ const posts = rawPosts.map((post) => {
     }
 
     function updateTimes() {
-      // 更新发布时间
       document.querySelectorAll('.publish-time').forEach(function(el) {
         var dateStr = el.getAttribute('datetime');
         var localTimeEl = el.querySelector('.local-time');
@@ -155,7 +205,6 @@ const posts = rawPosts.map((post) => {
           localTimeEl.textContent = formatLocalTime(new Date(dateStr));
         }
       });
-      // 更新相对时间和 title
       document.querySelectorAll('.updated[data-updated]').forEach(function(el) {
         var dateStr = el.getAttribute('data-updated');
         if (dateStr) {
@@ -169,9 +218,54 @@ const posts = rawPosts.map((post) => {
       });
     }
 
-    // 立即执行
-    updateTimes();
-    // View Transitions 路由切换后重新执行
-    document.addEventListener('astro:page-load', updateTimes);
+    function sortPosts(sortBy) {
+      var list = document.getElementById('post-list');
+      if (!list) return;
+      var items = Array.from(list.children);
+      
+      items.sort(function(a, b) {
+        var aPinned = parseInt(a.dataset.pinned) || 0;
+        var bPinned = parseInt(b.dataset.pinned) || 0;
+        if (aPinned !== bPinned) return bPinned - aPinned;
+        
+        var aTime = sortBy === 'published' 
+          ? parseInt(a.dataset.published) 
+          : parseInt(a.dataset.updated);
+        var bTime = sortBy === 'published' 
+          ? parseInt(b.dataset.published) 
+          : parseInt(b.dataset.updated);
+        if (bTime !== aTime) return bTime - aTime;
+        
+        return (a.dataset.title || '').localeCompare(b.dataset.title || '', 'zh-CN');
+      });
+      
+      items.forEach(function(item) { list.appendChild(item); });
+    }
+
+    function initSortToggle() {
+      var savedSort = localStorage.getItem(SORT_KEY) || 'updated';
+      var buttons = document.querySelectorAll('.sort-btn');
+      
+      buttons.forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.sort === savedSort);
+        btn.addEventListener('click', function() {
+          var sortBy = this.dataset.sort;
+          buttons.forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          localStorage.setItem(SORT_KEY, sortBy);
+          sortPosts(sortBy);
+        });
+      });
+      
+      sortPosts(savedSort);
+    }
+
+    function init() {
+      updateTimes();
+      initSortToggle();
+    }
+
+    init();
+    document.addEventListener('astro:page-load', init);
   })();
 </script>
