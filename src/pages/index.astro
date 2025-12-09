@@ -21,10 +21,8 @@ const posts = rawPosts.map((post) => {
   const aPinned = a.data.pinned ?? 0;
   const bPinned = b.data.pinned ?? 0;
   if (aPinned !== bPinned) return bPinned - aPinned;
-  // 按更新时间或发布时间排序
-  const aTime = (a.updatedDate ?? a.date).valueOf();
-  const bTime = (b.updatedDate ?? b.date).valueOf();
-  return bTime - aTime;
+  // 按发布时间排序
+  return b.date.valueOf() - a.date.valueOf();
 }).slice(0, 5);
 ---
 
