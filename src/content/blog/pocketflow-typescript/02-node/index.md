@@ -76,6 +76,7 @@ class BaseNode<S = unknown, P extends NonIterableObject = NonIterableObject> {
 }
 ```
 
+
 ## 设计思路深度解析
 
 ### 1. 三阶段生命周期 (prep → exec → post)
@@ -260,9 +261,9 @@ class ApiNode extends Node<State> {
 
 ## 系列导航
 
-1. [设计哲学与核心抽象](./01-overview)
+1. [设计哲学与核心抽象](../01-overview)
 2. **Node 深度解析：BaseNode 与重试机制**（本篇）
-3. [Flow 深度解析：编排与批处理](./03-flow)
+3. [Flow 深度解析：编排与批处理](../03-flow)
 4. 设计模式实践：Agent、Workflow、RAG（待更新）
 5. 实战指南：完整示例与最佳实践（待更新）
 
