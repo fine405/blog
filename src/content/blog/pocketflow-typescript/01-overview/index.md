@@ -103,8 +103,8 @@ Params 是节点级别的临时参数，主要用于 Batch 场景，由 Flow 统
 本系列将分为以下几篇深入解析 PocketFlow：
 
 1. **设计哲学与核心抽象**（本篇）
-2. [Node 深度解析：BaseNode 与重试机制](../02-node)
-3. [Flow 深度解析：编排与批处理](../03-flow)
+2. [Node 深度解析：BaseNode 与重试机制](/blog/pocketflow-typescript/02-node)
+3. [Flow 深度解析：编排与批处理](/blog/pocketflow-typescript/03-flow)
 4. 设计模式实践：Agent、Workflow、RAG（待更新）
 5. 实战指南：完整示例与最佳实践（待更新）
 

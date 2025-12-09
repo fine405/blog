@@ -361,8 +361,8 @@ class SummarizeFile extends Node<SharedStore, { filename: string }> {
 
 ## 系列导航
 
-1. [设计哲学与核心抽象](../01-overview)
-2. [Node 深度解析：BaseNode 与重试机制](../02-node)
+1. [设计哲学与核心抽象](/blog/pocketflow-typescript/01-overview)
+2. [Node 深度解析：BaseNode 与重试机制](/blog/pocketflow-typescript/02-node)
 3. **Flow 深度解析：编排与批处理**（本篇）
 4. 设计模式实践：Agent、Workflow、RAG（待更新）
 5. 实战指南：完整示例与最佳实践（待更新）
