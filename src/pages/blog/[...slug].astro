@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import ImageLightbox from '../../components/ImageLightbox.astro';
 import { getBlogDates } from '../../utils/git-dates';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -23,9 +24,8 @@ const { date, updatedDate } = getBlogDates(
   post.data.disableUpdateDate
 );
 
-// 计算阅读时间（中文约 300 字/分钟）
-const wordCount = post.body.length;
-const readingTime = Math.max(1, Math.ceil(wordCount / 300));
+// 计算阅读时间（区分中英文）
+const readingTime = calculateReadingTime(post.body);
 ---
 
 <BaseLayout 
