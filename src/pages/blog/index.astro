@@ -31,7 +31,13 @@ const posts = rawPosts.map((post) => {
 });
 ---
 
-<BaseLayout title="文章列表 - Fine">
+<BaseLayout
+  title="文章列表 - Fine"
+  description="按发布时间与更新时间浏览全部技术文章，覆盖 AI、TypeScript、系统设计与开发工具实践。"
+  tags={['技术文章', 'AI', 'TypeScript', '系统设计', '开发工具']}
+  schemaType="CollectionPage"
+  schemaTitle="Fine 技术文章列表"
+>
   <div class="page-header">
     <h1>所有文章</h1>
     <div class="sort-toggle" role="group" aria-label="排序方式">

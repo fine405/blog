@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://fine405.vercel.app/sitemap-index.xml

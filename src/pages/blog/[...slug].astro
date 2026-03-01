@@ -6,7 +6,9 @@ import { getBlogDates } from '../../utils/git-dates';
 import { calculateReadingTime } from '../../utils/reading-time';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
+  const posts = await getCollection('blog', ({ data }) => {
+    return import.meta.env.DEV || !data.draft;
+  });
   return posts.map((post) => ({
     params: { slug: post.slug },
     props: { post },
@@ -14,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content, remarkPluginFrontmatter } = await post.render();
+const { Content } = await post.render();
 
 // 使用 Git 时间
 const { date, updatedDate } = getBlogDates(
@@ -26,13 +28,16 @@ const { date, updatedDate } = getBlogDates(
 
 // 计算阅读时间（区分中英文）
 const readingTime = calculateReadingTime(post.body);
+const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
 ---
 
 <BaseLayout 
   title={`${post.data.title} - Fine`} 
   description={post.data.description}
   image={post.data.cover?.url}
+  imageAlt={coverAlt}
   type="article"
+  schemaTitle={post.data.title}
   publishedTime={date}
   modifiedTime={updatedDate}
   tags={post.data.tags}
@@ -59,14 +64,14 @@ const readingTime = calculateReadingTime(post.body);
       </div>
       {post.data.tags && (
         <div class="tags">
-          {post.data.tags.map((tag: string) => <a href={`/tags/${tag}`} class="tag">{tag}</a>)}
+          {post.data.tags.map((tag: string) => <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>)}
         </div>
       )}
     </header>
      {post.data.cover && (
       <figure class="cover">
-        <img src={post.data.cover.url} alt={post.data.cover.alt} />
-        <figcaption>{post.data.cover.alt}</figcaption>
+        <img src={post.data.cover.url} alt={coverAlt} />
+        <figcaption>{coverAlt}</figcaption>
       </figure>
     )}
     <div class="content">

@@ -8,9 +8,9 @@
 
   document.addEventListener('astro:page-load', () => {
     // 获取文章内容区域的所有图片
-    const contentImages = document.querySelectorAll('.content img');
+    const contentImages = document.querySelectorAll<HTMLImageElement>('.content img');
     
-    contentImages.forEach((img, index) => {
+    contentImages.forEach((img) => {
       // 添加 glightbox class 和 data 属性
       img.classList.add('glightbox');
       img.setAttribute('data-gallery', 'post-images');

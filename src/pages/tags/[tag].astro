@@ -4,7 +4,9 @@ import { getCollection } from 'astro:content';
 import { getBlogDates } from '../../utils/git-dates';
 
 export async function getStaticPaths() {
-  const rawPosts = await getCollection('blog');
+  const rawPosts = await getCollection('blog', ({ data }) => {
+    return import.meta.env.DEV || !data.draft;
+  });
   const tags = [...new Set(rawPosts.flatMap((post) => post.data.tags || []))];
   
   // 为每篇文章计算 Git 时间
@@ -31,7 +33,13 @@ export async function getStaticPaths() {
 const { tag, posts } = Astro.props;
 ---
 
-<BaseLayout title={`${tag} - Fine`}>
+<BaseLayout
+  title={`${tag} - Fine`}
+  description={`收录 ${posts.length} 篇与 ${tag} 相关的技术文章，持续更新实践经验与方法总结。`}
+  tags={[tag, '技术博客']}
+  schemaType="CollectionPage"
+  schemaTitle={`${tag} 相关文章`}
+>
   <header class="page-header">
     <a href="/tags" class="back">← 所有标签</a>
     <h1>#{tag}</h1>

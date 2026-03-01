@@ -2,7 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="关于 - Fine">
+<BaseLayout
+  title="关于 - Fine"
+  description="关于 Fine：聚焦 AI 与软件工程实践，记录技术栈、写作方向与协作方式。"
+  tags={['关于作者', 'AI 工程', '软件开发']}
+  schemaType="AboutPage"
+  schemaTitle="关于 Fine"
+>
   <article class="about">
     <h1>关于我</h1>
     <p class="tagline">
@@ -26,7 +32,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       如果你有任何问题或想法，欢迎通过以下方式联系我：
     </p>
     <ul>
-      <li>GitHub: <a href="https://github.com/fine405" target="_blank">@fine405</a></li>
+      <li>GitHub: <a href="https://github.com/fine405" target="_blank" rel="noopener noreferrer">@fine405</a></li>
       <li>Email: 18224017933@163.com</li>
     </ul>
 

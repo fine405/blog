@@ -2,18 +2,26 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog');
+const posts = await getCollection('blog', ({ data }) => {
+  return import.meta.env.DEV || !data.draft;
+});
 const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
 ---
 
-<BaseLayout title="标签 - Fine">
+<BaseLayout
+  title="标签 - Fine"
+  description="按主题浏览博客内容，快速定位 AI、TypeScript、系统设计与开发工具相关文章。"
+  tags={['标签页', 'AI', 'TypeScript', '开发工具']}
+  schemaType="CollectionPage"
+  schemaTitle="Fine 文章标签列表"
+>
   <h1>所有标签</h1>
   <ul class="tag-list">
     {tags.map((tag) => {
       const count = posts.filter((post) => post.data.tags?.includes(tag)).length;
       return (
         <li>
-          <a href={`/tags/${tag}`}>
+          <a href={`/tags/${encodeURIComponent(tag)}`}>
             {tag}
             <span class="count">{count}</span>
           </a>

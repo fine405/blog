@@ -26,7 +26,11 @@ const posts = rawPosts.map((post) => {
 }).slice(0, 5);
 ---
 
-<BaseLayout title="Fine - 博客">
+<BaseLayout
+  title="Fine 的技术博客"
+  description="记录 AI 工程、TypeScript、架构设计与效率工具实战，分享可复用的开发经验与思考。"
+  tags={['AI', 'TypeScript', '架构设计', '工程实践', '技术博客']}
+>
   <section class="hero">
     <h1>你好，我是 Fine 👋</h1>
     <p>这里记录我的技术学习与思考，分享开发中的经验与心得。</p>
