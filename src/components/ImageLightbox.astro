@@ -6,10 +6,10 @@
   import GLightbox from 'glightbox';
   import 'glightbox/dist/css/glightbox.min.css';
 
-  document.addEventListener('astro:page-load', () => {
+  function initLightbox() {
     // 获取文章内容区域的所有图片
     const contentImages = document.querySelectorAll<HTMLImageElement>('.content img');
-    
+
     contentImages.forEach((img) => {
       // 添加 glightbox class 和 data 属性
       img.classList.add('glightbox');
@@ -17,9 +17,14 @@
       img.style.cursor = 'zoom-in';
     });
 
+    const existing = window['__glightboxInstance'];
+    if (existing && typeof existing.destroy === 'function') {
+      existing.destroy();
+    }
+
     // 初始化 GLightbox
     if (contentImages.length > 0) {
-      GLightbox({
+      window['__glightboxInstance'] = GLightbox({
         selector: '.glightbox',
         touchNavigation: true,
         loop: true,
@@ -31,8 +36,19 @@
           next: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>',
         },
       });
+      return;
     }
-  });
+
+    window['__glightboxInstance'] = undefined;
+  }
+
+  initLightbox();
+
+  if (window['__imageLightboxPageLoadHandler']) {
+    document.removeEventListener('astro:page-load', window['__imageLightboxPageLoadHandler']);
+  }
+  window['__imageLightboxPageLoadHandler'] = initLightbox;
+  document.addEventListener('astro:page-load', window['__imageLightboxPageLoadHandler']);
 </script>
 
 <style is:global>

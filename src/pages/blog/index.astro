@@ -254,6 +254,11 @@ const posts = rawPosts.map((post) => {
       
       buttons.forEach(function(btn) {
         btn.classList.toggle('active', btn.dataset.sort === savedSort);
+      });
+
+      buttons.forEach(function(btn) {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
         btn.addEventListener('click', function() {
           var sortBy = this.dataset.sort;
           buttons.forEach(function(b) { b.classList.remove('active'); });
@@ -272,6 +277,10 @@ const posts = rawPosts.map((post) => {
     }
 
     init();
-    document.addEventListener('astro:page-load', init);
+    if (window['__blogIndexInitHandler']) {
+      document.removeEventListener('astro:page-load', window['__blogIndexInitHandler']);
+    }
+    window['__blogIndexInitHandler'] = init;
+    document.addEventListener('astro:page-load', window['__blogIndexInitHandler']);
   })();
 </script>

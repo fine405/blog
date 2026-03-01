@@ -127,8 +127,12 @@ const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
 
         // 立即执行
         updateTimes();
-        // View Transitions 路由切换后重新执行
-        document.addEventListener('astro:page-load', updateTimes);
+        // View Transitions 路由切换后重新执行（先移除旧监听器，避免重复绑定）
+        if (window['__postUpdateTimesHandler']) {
+          document.removeEventListener('astro:page-load', window['__postUpdateTimesHandler']);
+        }
+        window['__postUpdateTimesHandler'] = updateTimes;
+        document.addEventListener('astro:page-load', window['__postUpdateTimesHandler']);
       })();
     </script>
 
@@ -183,7 +187,21 @@ const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
             }
           }
 
-          // 监听主题切换
+          function handlePageLoad() {
+            loadGiscus();
+          }
+
+          // 替换旧的 page-load 监听器，避免重复执行
+          if (window['__giscusPageLoadHandler']) {
+            document.removeEventListener('astro:page-load', window['__giscusPageLoadHandler']);
+          }
+          window['__giscusPageLoadHandler'] = handlePageLoad;
+          document.addEventListener('astro:page-load', window['__giscusPageLoadHandler']);
+
+          // 监听主题切换（先断开旧 observer，避免泄漏）
+          if (window['__giscusThemeObserver']) {
+            window['__giscusThemeObserver'].disconnect();
+          }
           const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
               if (mutation.attributeName === 'data-theme') {
@@ -192,12 +210,10 @@ const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
             });
           });
           observer.observe(document.documentElement, { attributes: true });
+          window['__giscusThemeObserver'] = observer;
 
           // 初始加载
           loadGiscus();
-
-          // View Transitions 后重新加载
-          document.addEventListener('astro:page-load', loadGiscus);
         })();
       </script>
     </section>

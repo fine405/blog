@@ -1,10 +1,17 @@
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
+const createdDateCache = new Map<string, Date | undefined>();
+const updatedDateCache = new Map<string, Date | undefined>();
+
 /**
  * 获取文件的 Git 首次提交时间（发布时间）
  */
 export function getGitCreatedDate(filePath: string): Date | undefined {
+  if (createdDateCache.has(filePath)) {
+    return createdDateCache.get(filePath);
+  }
+
   try {
     // --follow 追踪重命名，--diff-filter=A 只看添加操作
     const out = execSync(
@@ -14,8 +21,11 @@ export function getGitCreatedDate(filePath: string): Date | undefined {
     // 可能有多行（如果文件被删除后重新添加），取最后一行（最早的）
     const lines = out.split('\n').filter(Boolean);
     const earliest = lines[lines.length - 1];
-    return earliest ? new Date(earliest) : undefined;
+    const date = earliest ? new Date(earliest) : undefined;
+    createdDateCache.set(filePath, date);
+    return date;
   } catch {
+    createdDateCache.set(filePath, undefined);
     return undefined;
   }
 }
@@ -24,13 +34,20 @@ export function getGitCreatedDate(filePath: string): Date | undefined {
  * 获取文件的 Git 最后提交时间（更新时间）
  */
 export function getGitUpdatedDate(filePath: string): Date | undefined {
+  if (updatedDateCache.has(filePath)) {
+    return updatedDateCache.get(filePath);
+  }
+
   try {
     const out = execSync(
       `git log -1 --format=%cI -- "${filePath}"`,
       { encoding: 'utf8', cwd: process.cwd() }
     ).trim();
-    return out ? new Date(out) : undefined;
+    const date = out ? new Date(out) : undefined;
+    updatedDateCache.set(filePath, date);
+    return date;
   } catch {
+    updatedDateCache.set(filePath, undefined);
     return undefined;
   }
 }
