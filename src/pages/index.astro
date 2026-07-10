@@ -17,11 +17,7 @@ const posts = rawPosts.map((post) => {
   );
   return { ...post, date, updatedDate };
 }).sort((a, b) => {
-  // 置顶文章优先
-  const aPinned = a.data.pinned ?? 0;
-  const bPinned = b.data.pinned ?? 0;
-  if (aPinned !== bPinned) return bPinned - aPinned;
-  // 按发布时间排序
+  // 按 Git 首次提交时间（发布时间）倒序排列
   return b.date.valueOf() - a.date.valueOf();
 }).slice(0, 5);
 ---
@@ -43,10 +39,7 @@ const posts = rawPosts.map((post) => {
         <li>
           <a href={`/blog/${post.slug}`}>
             <article>
-              <h3>
-              {post.data.pinned && <span class="pin-icon">📌</span>}
-              {post.data.title}
-            </h3>
+              <h3>{post.data.title}</h3>
               <p class="meta">
                 <time datetime={post.date.toISOString()}>
                   {post.date.toLocaleDateString('zh-CN')}
@@ -112,10 +105,6 @@ const posts = rawPosts.map((post) => {
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
     color: var(--text);
-  }
-
-  .pin-icon {
-    margin-right: 0.25rem;
   }
 
   .meta {

@@ -74,11 +74,11 @@ export function getBlogDates(
 ): { date: Date; updatedDate: Date | undefined } {
   const filePath = getBlogFilePath(slug);
   
-  // 发布时间：优先用 frontmatter（允许手动控制排序），兜底用 Git 首次提交时间
+  // 发布时间以首次 Git 提交时间为准；frontmatter 仅在无 Git 历史时兜底
   const gitCreated = getGitCreatedDate(filePath);
   const gitUpdated = getGitUpdatedDate(filePath);
   
-  const date = frontmatterDate ?? gitCreated ?? new Date();
+  const date = gitCreated ?? frontmatterDate ?? new Date();
   
   // 如果禁用更新时间，直接返回
   if (disableUpdateDate) {
