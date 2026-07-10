@@ -18,11 +18,7 @@ const posts = rawPosts.map((post) => {
   );
   return { ...post, date, updatedDate };
 }).sort((a, b) => {
-  // 置顶文章优先，数字越大越靠前
-  const aPinned = a.data.pinned ?? 0;
-  const bPinned = b.data.pinned ?? 0;
-  if (aPinned !== bPinned) return bPinned - aPinned;
-  // 默认按发布时间排序
+  // 按 Git 首次提交时间（发布时间）倒序排列
   const aTime = a.date.valueOf();
   const bTime = b.date.valueOf();
   if (bTime !== aTime) return bTime - aTime;
@@ -40,25 +36,13 @@ const posts = rawPosts.map((post) => {
 >
   <div class="page-header">
     <h1>所有文章</h1>
-    <div class="sort-toggle" role="group" aria-label="排序方式">
-      <button class="sort-btn" data-sort="updated">最近更新</button>
-      <button class="sort-btn active" data-sort="published">发布时间</button>
-    </div>
   </div>
-  <ul class="post-list" id="post-list">
+  <ul class="post-list">
     {posts.map((post) => (
-      <li 
-        data-pinned={post.data.pinned ?? 0}
-        data-published={post.date.valueOf()}
-        data-updated={(post.updatedDate ?? post.date).valueOf()}
-        data-title={post.data.title}
-      >
-        <a href={`/blog/${post.slug}`} class:list={[{ pinned: post.data.pinned }]}>
+      <li>
+        <a href={`/blog/${post.slug}`}>
           <article>
-            <h2>
-              {post.data.pinned && <span class="pin-icon">📌</span>}
-              {post.data.title}
-            </h2>
+            <h2>{post.data.title}</h2>
             <p class="meta">
               <time datetime={post.date.toISOString()} class="publish-time">
                 发布于 <span class="local-time"></span>
@@ -92,35 +76,6 @@ const posts = rawPosts.map((post) => {
     margin: 0;
   }
 
-  .sort-toggle {
-    display: flex;
-    gap: 0.25rem;
-    background: var(--bg-secondary);
-    padding: 0.25rem;
-    border-radius: 6px;
-  }
-
-  .sort-btn {
-    padding: 0.4rem 0.75rem;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .sort-btn:hover {
-    color: var(--text);
-  }
-
-  .sort-btn.active {
-    background: var(--bg);
-    color: var(--text);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-
   .post-list {
     list-style: none;
   }
@@ -142,15 +97,6 @@ const posts = rawPosts.map((post) => {
   .post-list a:hover {
     border-color: var(--accent);
     background: var(--bg-secondary);
-  }
-
-  .post-list a.pinned {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 5%, transparent);
-  }
-
-  .pin-icon {
-    margin-right: 0.25rem;
   }
 
   .post-list h2 {
@@ -182,8 +128,6 @@ const posts = rawPosts.map((post) => {
 
 <script is:inline>
   (function() {
-    var SORT_KEY = 'blog-sort-preference';
-
     function formatRelativeTime(date) {
       var now = new Date();
       var diff = now.getTime() - date.getTime();
@@ -224,56 +168,8 @@ const posts = rawPosts.map((post) => {
       });
     }
 
-    function sortPosts(sortBy) {
-      var list = document.getElementById('post-list');
-      if (!list) return;
-      var items = Array.from(list.children);
-      
-      items.sort(function(a, b) {
-        var aPinned = parseInt(a.dataset.pinned) || 0;
-        var bPinned = parseInt(b.dataset.pinned) || 0;
-        if (aPinned !== bPinned) return bPinned - aPinned;
-        
-        var aTime = sortBy === 'published' 
-          ? parseInt(a.dataset.published) 
-          : parseInt(a.dataset.updated);
-        var bTime = sortBy === 'published' 
-          ? parseInt(b.dataset.published) 
-          : parseInt(b.dataset.updated);
-        if (bTime !== aTime) return bTime - aTime;
-        
-        return (a.dataset.title || '').localeCompare(b.dataset.title || '', 'zh-CN');
-      });
-      
-      items.forEach(function(item) { list.appendChild(item); });
-    }
-
-    function initSortToggle() {
-      var savedSort = localStorage.getItem(SORT_KEY) || 'published';
-      var buttons = document.querySelectorAll('.sort-btn');
-      
-      buttons.forEach(function(btn) {
-        btn.classList.toggle('active', btn.dataset.sort === savedSort);
-      });
-
-      buttons.forEach(function(btn) {
-        if (btn.dataset.bound === 'true') return;
-        btn.dataset.bound = 'true';
-        btn.addEventListener('click', function() {
-          var sortBy = this.dataset.sort;
-          buttons.forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          localStorage.setItem(SORT_KEY, sortBy);
-          sortPosts(sortBy);
-        });
-      });
-      
-      sortPosts(savedSort);
-    }
-
     function init() {
       updateTimes();
-      initSortToggle();
     }
 
     init();
