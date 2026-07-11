@@ -104,7 +104,11 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       </a>
     </footer>
 
-    <section class="comments liquid-glass" aria-labelledby="comments-title">
+    <section
+      class="comments liquid-glass"
+      aria-labelledby="comments-title"
+      data-discussion-term={`blog/${post.slug}`}
+    >
       <div class="comments-heading">
         <p class="eyebrow">DISCUSSION</p>
         <h2 id="comments-title">评论</h2>
@@ -246,9 +250,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   <script is:inline>
     (function() {
-      const COMMENTS_API = '/api/discussions';
-      const COMMENTS_REPO = 'fine405/blog';
-      const COMMENTS_CATEGORY = 'General';
+      const COMMENTS_API = 'https://fine405.vercel.app/api/discussions';
       const ASSOCIATION_LABELS = {
         OWNER: '作者',
         MEMBER: '成员',
@@ -260,10 +262,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       };
 
       function getDiscussionTerm() {
-        const pathname = window.location.pathname.replace(/\/+$/, '');
-        return pathname.length < 2
-          ? 'index'
-          : pathname.substring(1).replace(/\.\w+$/, '');
+        const comments = document.querySelector('.comments[data-discussion-term]');
+        return comments?.dataset.discussionTerm || '';
       }
 
       function getDiscussionSearchUrl(term) {
@@ -465,13 +465,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
         discussionsLink.href = searchUrl;
         discussionsLink.textContent = '前往 GitHub 评论';
 
-        const params = new URLSearchParams({
-          repo: COMMENTS_REPO,
-          term,
-          category: COMMENTS_CATEGORY,
-          strict: 'false',
-          first: '20',
-        });
+        const params = new URLSearchParams({ term });
         const timeout = window.setTimeout(() => controller.abort(), 10000);
 
         try {
