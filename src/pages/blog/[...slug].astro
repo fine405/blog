@@ -1,7 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
-import { ArrowLeft, CalendarDays, Clock3, RefreshCw } from '@lucide/astro';
+import {
+  ArrowLeft,
+  CalendarDays,
+  ChevronUp,
+  Clock3,
+  ListTree,
+  RefreshCw,
+} from '@lucide/astro';
 import ImageLightbox from '../../components/ImageLightbox.astro';
 import { getBlogDates } from '../../utils/git-dates';
 import { calculateReadingTime } from '../../utils/reading-time';
@@ -17,7 +24,8 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content, headings } = await post.render();
+const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 const { date, updatedDate } = getBlogDates(
   post.slug,
@@ -47,6 +55,70 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   tags={post.data.tags}
 >
   <div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
+
+  {tocHeadings.length > 0 && (
+    <aside class="article-toc liquid-glass" data-article-toc aria-label="文章目录">
+      <button
+        class="toc-toggle"
+        type="button"
+        aria-controls="article-toc-panel"
+        aria-expanded="false"
+      >
+        <span class="toc-toggle-icon" aria-hidden="true">
+          <ListTree size={17} stroke-width={1.9} />
+        </span>
+        <span>目录</span>
+        <span class="toc-toggle-progress" data-toc-progress-text>0%</span>
+        <span class="toc-toggle-chevron" aria-hidden="true">
+          <ChevronUp size={15} stroke-width={2} />
+        </span>
+      </button>
+
+      <div class="toc-panel" id="article-toc-panel">
+        <div class="toc-heading">
+          <div>
+            <p>ON THIS PAGE</p>
+            <h2>文章目录</h2>
+          </div>
+          <span>{tocHeadings.length} 项</span>
+        </div>
+
+        <nav class="toc-nav" aria-label="文章章节">
+          <ol class="toc-list">
+            {tocHeadings.map((heading, index) => (
+              <li>
+                <a
+                  href={`#${heading.slug}`}
+                  class:list={[
+                    'toc-link',
+                    `toc-depth-${heading.depth}`,
+                    { 'is-active': index === 0 },
+                  ]}
+                  data-toc-link
+                  data-heading-id={heading.slug}
+                  aria-current={index === 0 ? 'location' : undefined}
+                  title={heading.text}
+                >
+                  <span class="toc-link-marker" aria-hidden="true"></span>
+                  <span class="toc-link-label">{heading.text}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <div class="toc-progress">
+          <div class="toc-progress-meta">
+            <span>阅读进度</span>
+            <output data-toc-progress-text>0%</output>
+          </div>
+          <span class="toc-progress-track" aria-hidden="true">
+            <span data-toc-progress-fill></span>
+          </span>
+        </div>
+      </div>
+    </aside>
+  )}
 
   <article class="post">
     <a href="/blog" class="back-link">
@@ -180,12 +252,13 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       function setupReadingProgress() {
         const content = document.getElementById('article-content');
         const progress = document.getElementById('reading-progress-bar');
-        if (!content || !progress) return;
 
         if (window['__articleProgressHandler']) {
           window.removeEventListener('scroll', window['__articleProgressHandler']);
           window.removeEventListener('resize', window['__articleProgressHandler']);
+          window['__articleProgressHandler'] = undefined;
         }
+        if (!content || !progress) return;
 
         const updateProgress = () => {
           const start = content.getBoundingClientRect().top + window.scrollY;
@@ -198,6 +271,168 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
         window.addEventListener('scroll', updateProgress, { passive: true });
         window.addEventListener('resize', updateProgress, { passive: true });
         updateProgress();
+      }
+
+      function setupArticleToc() {
+        if (window['__articleTocController']) {
+          window['__articleTocController'].abort();
+          window['__articleTocController'] = undefined;
+        }
+
+        const toc = document.querySelector('[data-article-toc]');
+        const content = document.getElementById('article-content');
+        if (!toc || !content) return;
+
+        const links = Array.from(toc.querySelectorAll('[data-toc-link]'));
+        const sections = links
+          .map((link) => ({
+            link,
+            section: document.getElementById(link.dataset.headingId || ''),
+          }))
+          .filter((item) => item.section);
+        if (!sections.length) return;
+
+        const controller = new AbortController();
+        const { signal } = controller;
+        const toggle = toc.querySelector('.toc-toggle');
+        const panel = toc.querySelector('.toc-panel');
+        const nav = toc.querySelector('.toc-nav');
+        const progressFill = toc.querySelector('[data-toc-progress-fill]');
+        const progressLabels = toc.querySelectorAll('[data-toc-progress-text]');
+        const compactQuery = window.matchMedia('(max-width: 1279px)');
+        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let activeId = '';
+        let frame = 0;
+
+        window['__articleTocController'] = controller;
+
+        const syncPanelAccessibility = () => {
+          const isCompact = compactQuery.matches;
+          const isOpen = toc.classList.contains('is-open');
+          toggle?.setAttribute('aria-expanded', String(isCompact && isOpen));
+
+          if (!panel) return;
+          if (isCompact && !isOpen) {
+            panel.setAttribute('aria-hidden', 'true');
+            panel.setAttribute('inert', '');
+          } else {
+            panel.removeAttribute('aria-hidden');
+            panel.removeAttribute('inert');
+          }
+        };
+
+        const setOpen = (open) => {
+          const shouldOpen = compactQuery.matches && open && toc.classList.contains('is-visible');
+          toc.classList.toggle('is-open', shouldOpen);
+          syncPanelAccessibility();
+        };
+
+        const centerActiveLink = (link) => {
+          if (!nav || nav.scrollHeight <= nav.clientHeight) return;
+          const navRect = nav.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          const delta = linkRect.top - navRect.top - (navRect.height - linkRect.height) / 2;
+          if (Math.abs(delta) < 12) return;
+          nav.scrollTo({
+            top: nav.scrollTop + delta,
+            behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
+          });
+        };
+
+        const setActive = (id) => {
+          if (!id || id === activeId) return;
+          activeId = id;
+
+          sections.forEach(({ link }) => {
+            const isActive = link.dataset.headingId === id;
+            link.classList.toggle('is-active', isActive);
+            if (isActive) {
+              link.setAttribute('aria-current', 'location');
+              centerActiveLink(link);
+            } else {
+              link.removeAttribute('aria-current');
+            }
+          });
+        };
+
+        const updateToc = () => {
+          frame = 0;
+          const contentRect = content.getBoundingClientRect();
+          const revealLine = Math.min(window.innerHeight * 0.3, 240);
+          const exitLine = Math.min(window.innerHeight * 0.24, 200);
+          const isVisible = contentRect.top <= revealLine && contentRect.bottom > exitLine;
+          toc.classList.toggle('is-visible', isVisible);
+          if (!isVisible && toc.classList.contains('is-open')) setOpen(false);
+
+          const contentTop = contentRect.top + window.scrollY;
+          const contentEnd = contentTop + content.offsetHeight - window.innerHeight;
+          const progress = contentEnd <= contentTop
+            ? (contentRect.top <= 0 ? 1 : 0)
+            : Math.min(1, Math.max(0, (window.scrollY - contentTop) / (contentEnd - contentTop)));
+          const progressText = Math.round(progress * 100) + '%';
+          if (progressFill) progressFill.style.transform = 'scaleX(' + progress + ')';
+          progressLabels.forEach((label) => { label.textContent = progressText; });
+
+          const activationLine = Math.min(window.innerHeight * 0.28, 220);
+          let current = sections[0];
+          sections.forEach((item) => {
+            if (item.section.getBoundingClientRect().top <= activationLine) current = item;
+          });
+          setActive(current.link.dataset.headingId || '');
+        };
+
+        const scheduleUpdate = () => {
+          if (!frame) frame = window.requestAnimationFrame(updateToc);
+        };
+
+        links.forEach((link) => {
+          link.addEventListener('click', (event) => {
+            const id = link.dataset.headingId || '';
+            const target = document.getElementById(id);
+            if (!target) return;
+
+            event.preventDefault();
+            setActive(id);
+            setOpen(false);
+
+            const url = new URL(window.location.href);
+            url.hash = id;
+            if (window.location.hash !== url.hash) window.history.pushState({}, '', url);
+            target.scrollIntoView({
+              behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
+              block: 'start',
+            });
+          }, { signal });
+        });
+
+        toggle?.addEventListener('click', () => {
+          setOpen(!toc.classList.contains('is-open'));
+        }, { signal });
+
+        document.addEventListener('pointerdown', (event) => {
+          if (!compactQuery.matches || !toc.classList.contains('is-open')) return;
+          if (event.target instanceof Node && !toc.contains(event.target)) setOpen(false);
+        }, { signal });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') setOpen(false);
+        }, { signal });
+
+        const handleModeChange = () => {
+          setOpen(false);
+          syncPanelAccessibility();
+          scheduleUpdate();
+        };
+        compactQuery.addEventListener('change', handleModeChange);
+        signal.addEventListener('abort', () => {
+          compactQuery.removeEventListener('change', handleModeChange);
+          if (frame) window.cancelAnimationFrame(frame);
+        }, { once: true });
+
+        window.addEventListener('scroll', scheduleUpdate, { passive: true, signal });
+        window.addEventListener('resize', scheduleUpdate, { passive: true, signal });
+        syncPanelAccessibility();
+        updateToc();
       }
 
       function setupCodeBlocks() {
@@ -236,6 +471,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       function initArticle() {
         updateTimes();
         setupReadingProgress();
+        setupArticleToc();
         setupCodeBlocks();
       }
 
@@ -524,6 +760,10 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 </BaseLayout>
 
 <style>
+  :global(html.js .page-main) {
+    animation-fill-mode: none;
+  }
+
   .reading-progress {
     position: fixed;
     top: 0;
@@ -542,6 +782,223 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     box-shadow: 0 0 16px rgba(91, 133, 242, 0.5);
     transform: scaleX(0);
     transform-origin: left center;
+    will-change: transform;
+  }
+
+  .article-toc {
+    position: fixed;
+    top: clamp(7.25rem, 17vh, 9.5rem);
+    right: max(1rem, calc((100vw - 1440px) / 2 + 1rem));
+    z-index: 85;
+    width: clamp(176px, calc((100vw - 1040px) / 2 - 2rem), 224px);
+    max-height: min(70vh, 660px);
+    padding: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 24px;
+    background: var(--glass-fill);
+    opacity: 1;
+    transform: none;
+    transform-origin: right center;
+    transition:
+      opacity 280ms ease,
+      transform 420ms var(--ease-out),
+      border-color 220ms ease,
+      box-shadow 260ms ease;
+  }
+
+  :global(.js) .article-toc {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(14px, 0, 0) scale(0.98);
+  }
+
+  :global(.js) .article-toc.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .article-toc.is-visible:hover {
+    border-color: var(--glass-stroke);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .toc-toggle {
+    display: none;
+  }
+
+  .toc-panel {
+    min-height: 0;
+    max-height: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toc-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .toc-heading p {
+    color: var(--accent-strong);
+    font-size: 0.58rem;
+    font-weight: 720;
+    letter-spacing: 0.16em;
+  }
+
+  .toc-heading h2 {
+    margin-top: 0.28rem;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    font-weight: 690;
+    letter-spacing: -0.025em;
+  }
+
+  .toc-heading > span {
+    flex: 0 0 auto;
+    padding: 0.23rem 0.42rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--text-tertiary);
+    font-size: 0.6rem;
+    font-weight: 620;
+  }
+
+  .toc-nav {
+    position: relative;
+    min-height: 0;
+    margin: 0.9rem -0.35rem 0.85rem;
+    padding: 0.05rem 0.35rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--border-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  .toc-list {
+    display: grid;
+    gap: 0.1rem;
+    list-style: none;
+  }
+
+  .toc-link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 8px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.45rem 0.48rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    font-weight: 560;
+    line-height: 1.45;
+    text-decoration: none;
+    transition:
+      color 220ms ease,
+      border-color 220ms ease,
+      background-color 220ms ease,
+      transform 260ms var(--ease-out);
+  }
+
+  .toc-link:hover {
+    border-color: var(--glass-stroke-muted);
+    background: var(--surface-soft);
+    color: var(--text-primary);
+    transform: translateX(2px);
+  }
+
+  .toc-link-marker {
+    width: 5px;
+    height: 5px;
+    justify-self: center;
+    border-radius: 999px;
+    background: var(--border-strong);
+    transition:
+      width 260ms var(--ease-out),
+      height 260ms var(--ease-out),
+      background-color 220ms ease,
+      box-shadow 260ms ease;
+  }
+
+  .toc-link-label {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    transition: transform 260ms var(--ease-out);
+  }
+
+  .toc-link.is-active {
+    border-color: color-mix(in srgb, var(--accent) 16%, transparent);
+    background: linear-gradient(100deg, var(--accent-soft), transparent 92%);
+    color: var(--accent-strong);
+    font-weight: 650;
+  }
+
+  .toc-link.is-active .toc-link-marker {
+    width: 3px;
+    height: 15px;
+    background: var(--accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 58%, transparent);
+  }
+
+  .toc-link.is-active .toc-link-label {
+    transform: translateX(2px);
+  }
+
+  .toc-depth-3 {
+    padding-left: 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 520;
+  }
+
+  .toc-progress {
+    padding-top: 0.78rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .toc-progress-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-tertiary);
+    font-size: 0.62rem;
+    font-weight: 610;
+  }
+
+  .toc-progress-meta output {
+    color: var(--accent-strong);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-progress-track {
+    height: 3px;
+    margin-top: 0.48rem;
+    display: block;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--border);
+  }
+
+  .toc-progress-track > span {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6fa9ff, var(--accent), #9d7cff);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 120ms linear;
     will-change: transform;
   }
 
@@ -1078,6 +1535,137 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     color: var(--accent-strong);
   }
 
+  @media (max-width: 1279px) {
+    .article-toc {
+      top: auto;
+      right: 4.75rem;
+      bottom: 1rem;
+      width: auto;
+      max-height: none;
+      display: none;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    :global(.js) .article-toc {
+      display: block;
+      transform: translateY(10px) scale(0.96);
+      transform-origin: bottom right;
+    }
+
+    :global(.js) .article-toc.is-visible {
+      transform: translateY(0) scale(1);
+    }
+
+    .article-toc::after {
+      display: none;
+    }
+
+    .article-toc.is-visible:hover {
+      box-shadow: none;
+    }
+
+    .toc-toggle {
+      min-height: 44px;
+      padding: 0 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 0.42rem;
+      border: 1px solid var(--glass-stroke-muted);
+      border-radius: 15px;
+      background: var(--glass-fill-strong);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 650;
+      -webkit-backdrop-filter: blur(22px) saturate(1.35);
+      backdrop-filter: blur(22px) saturate(1.35);
+      transition:
+        color 180ms ease,
+        border-color 180ms ease,
+        background-color 180ms ease,
+        transform 220ms var(--ease-out);
+    }
+
+    .toc-toggle:hover {
+      border-color: var(--glass-stroke);
+      background: var(--surface-solid);
+      transform: translateY(-2px);
+    }
+
+    .toc-toggle-icon,
+    .toc-toggle-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toc-toggle-icon {
+      color: var(--accent-strong);
+    }
+
+    .toc-toggle-progress {
+      padding: 0.16rem 0.34rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 0.62rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .toc-toggle-chevron {
+      color: var(--text-tertiary);
+      transition: transform 300ms var(--ease-out);
+    }
+
+    .article-toc.is-open .toc-toggle-chevron {
+      transform: rotate(180deg);
+    }
+
+    .article-toc > .toc-panel {
+      position: absolute;
+      right: -3.75rem;
+      bottom: calc(100% + 0.72rem);
+      width: min(340px, calc(100vw - 2rem));
+      max-height: min(65vh, 520px);
+      padding: 1rem;
+      overflow: hidden;
+      border: 1px solid var(--glass-stroke-muted);
+      border-radius: 22px;
+      background: var(--glass-fill-strong);
+      box-shadow: var(--glass-shadow-hover), inset 0 1px 0 var(--glass-highlight);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(10px) scale(0.97);
+      transform-origin: bottom right;
+      -webkit-backdrop-filter: blur(26px) saturate(1.4);
+      backdrop-filter: blur(26px) saturate(1.4);
+      transition:
+        opacity 220ms ease,
+        visibility 220ms ease,
+        transform 340ms var(--ease-out);
+    }
+
+    .article-toc.is-open > .toc-panel {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    .toc-nav {
+      max-height: min(44vh, 360px);
+    }
+  }
+
   @media (max-width: 640px) {
     .post-header {
       margin-top: 2.5rem;
@@ -1137,6 +1725,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   @media print {
     .reading-progress,
+    .article-toc,
     .back-link,
     .post-footer,
     .comments,
