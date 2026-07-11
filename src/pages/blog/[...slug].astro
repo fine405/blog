@@ -109,7 +109,22 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
         <p class="eyebrow">DISCUSSION</p>
         <h2 id="comments-title">评论</h2>
       </div>
-      <div class="giscus"></div>
+      <p class="comments-status" role="status" aria-live="polite">正在加载评论…</p>
+      <div class="comments-list"></div>
+      <div class="comments-fallback" hidden>
+        <p class="comments-fallback-message">评论暂时无法加载，但仍可在 GitHub Discussions 中查看和回复。</p>
+        <div class="comments-fallback-actions">
+          <a
+            class="comments-discussions-link"
+            href="https://github.com/fine405/blog/discussions"
+            target="_blank"
+            rel="noreferrer"
+          >
+            前往 GitHub 评论
+          </a>
+          <button class="comments-retry" type="button">重新加载</button>
+        </div>
+      </div>
     </section>
   </article>
 
@@ -231,59 +246,285 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   <script is:inline>
     (function() {
-      function getGiscusTheme() {
-        const theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme');
-        return theme === 'dark' ? 'dark' : 'light';
+      const COMMENTS_API = '/api/discussions';
+      const COMMENTS_REPO = 'fine405/blog';
+      const COMMENTS_CATEGORY = 'General';
+      const ASSOCIATION_LABELS = {
+        OWNER: '作者',
+        MEMBER: '成员',
+        COLLABORATOR: '协作者',
+        CONTRIBUTOR: '贡献者',
+        FIRST_TIMER: '首次参与',
+        FIRST_TIME_CONTRIBUTOR: '首次贡献',
+        APP: '应用',
+      };
+
+      function getDiscussionTerm() {
+        const pathname = window.location.pathname.replace(/\/+$/, '');
+        return pathname.length < 2
+          ? 'index'
+          : pathname.substring(1).replace(/\.\w+$/, '');
       }
 
-      function loadGiscus() {
-        const container = document.querySelector('.giscus');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const script = document.createElement('script');
-        script.src = 'https://giscus.app/client.js';
-        script.setAttribute('data-repo', 'fine405/blog');
-        script.setAttribute('data-repo-id', 'R_kgDOQhlUWQ');
-        script.setAttribute('data-category', 'General');
-        script.setAttribute('data-category-id', 'DIC_kwDOQhlUWc4CzVPI');
-        script.setAttribute('data-mapping', 'pathname');
-        script.setAttribute('data-strict', '0');
-        script.setAttribute('data-reactions-enabled', '1');
-        script.setAttribute('data-emit-metadata', '0');
-        script.setAttribute('data-input-position', 'top');
-        script.setAttribute('data-theme', getGiscusTheme());
-        script.setAttribute('data-lang', 'zh-CN');
-        script.setAttribute('crossorigin', 'anonymous');
-        script.async = true;
-        container.appendChild(script);
+      function getDiscussionSearchUrl(term) {
+        return 'https://github.com/fine405/blog/discussions?discussions_q=' + encodeURIComponent(term);
       }
 
-      function setGiscusTheme(theme) {
-        const iframe = document.querySelector('iframe.giscus-frame');
-        if (iframe) {
-          iframe.contentWindow.postMessage(
-            { giscus: { setConfig: { theme: theme } } },
-            'https://giscus.app'
-          );
+      function getSafeGitHubUrl(value, fallback) {
+        try {
+          const url = new URL(value);
+          return url.protocol === 'https:' && url.hostname === 'github.com' ? url.href : fallback;
+        } catch {
+          return fallback;
         }
       }
 
-      if (window['__giscusPageLoadHandler']) {
-        document.removeEventListener('astro:page-load', window['__giscusPageLoadHandler']);
-      }
-      window['__giscusPageLoadHandler'] = loadGiscus;
-      document.addEventListener('astro:page-load', window['__giscusPageLoadHandler']);
-
-      if (window['__giscusThemeObserver']) window['__giscusThemeObserver'].disconnect();
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === 'data-theme') setGiscusTheme(getGiscusTheme());
+      function getCommentText(bodyHTML) {
+        const template = document.createElement('template');
+        template.innerHTML = bodyHTML || '';
+        template.content.querySelectorAll('script, style, noscript').forEach((element) => element.remove());
+        template.content.querySelectorAll('br').forEach((element) => element.replaceWith('\n'));
+        template.content.querySelectorAll('p, div, li, pre, blockquote').forEach((element) => {
+          element.appendChild(document.createTextNode('\n'));
         });
-      });
-      observer.observe(document.documentElement, { attributes: true });
-      window['__giscusThemeObserver'] = observer;
-      loadGiscus();
+        return (template.content.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+      }
+
+      function formatCommentDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(date);
+      }
+
+      function createCommentCard(comment, isReply) {
+        const card = document.createElement(isReply ? 'div' : 'article');
+        card.className = isReply ? 'comment-card comment-reply' : 'comment-card';
+
+        const header = document.createElement('div');
+        header.className = 'comment-card-header';
+
+        const fallbackUrl = 'https://github.com/fine405/blog/discussions';
+        const author = document.createElement('a');
+        author.className = 'comment-author';
+        author.href = getSafeGitHubUrl(comment.author?.url, fallbackUrl);
+        author.target = '_blank';
+        author.rel = 'nofollow noreferrer';
+        author.textContent = '@' + (comment.author?.login || 'github-user');
+        header.appendChild(author);
+
+        if (comment.authorAssociation && comment.authorAssociation !== 'NONE') {
+          const association = document.createElement('span');
+          association.className = 'comment-association';
+          association.textContent = ASSOCIATION_LABELS[comment.authorAssociation] || comment.authorAssociation;
+          header.appendChild(association);
+        }
+
+        const commentUrl = getSafeGitHubUrl(comment.url, fallbackUrl);
+        const timeLink = document.createElement('a');
+        timeLink.className = 'comment-date';
+        timeLink.href = commentUrl;
+        timeLink.target = '_blank';
+        timeLink.rel = 'nofollow noreferrer';
+
+        const time = document.createElement('time');
+        time.dateTime = comment.createdAt || '';
+        time.textContent = formatCommentDate(comment.createdAt);
+        timeLink.appendChild(time);
+        header.appendChild(timeLink);
+        card.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'comment-card-body';
+        body.textContent = comment.deletedAt
+          ? '此评论已删除。'
+          : comment.isMinimized
+            ? '此评论已被折叠，请前往 GitHub 查看。'
+            : getCommentText(comment.bodyHTML) || '（空评论）';
+        card.appendChild(body);
+
+        const footer = document.createElement('div');
+        footer.className = 'comment-card-footer';
+
+        if (!isReply && comment.replyCount > 0) {
+          const replyCount = document.createElement('span');
+          replyCount.textContent = comment.replyCount + ' 条回复';
+          footer.appendChild(replyCount);
+        }
+
+        const replyLink = document.createElement('a');
+        replyLink.href = commentUrl;
+        replyLink.target = '_blank';
+        replyLink.rel = 'nofollow noreferrer';
+        replyLink.textContent = isReply ? '在 GitHub 查看' : '在 GitHub 回复';
+        footer.appendChild(replyLink);
+        card.appendChild(footer);
+
+        if (!isReply && Array.isArray(comment.replies) && comment.replies.length > 0) {
+          const replies = document.createElement('div');
+          replies.className = 'comment-replies';
+          comment.replies.slice(-5).forEach((reply) => {
+            replies.appendChild(createCommentCard(reply, true));
+          });
+          card.appendChild(replies);
+        }
+
+        return card;
+      }
+
+      function renderDiscussion(data, elements, searchUrl) {
+        const discussion = data?.discussion;
+        if (!discussion || !Array.isArray(discussion.comments)) {
+          throw new Error('Invalid comments response');
+        }
+
+        const discussionUrl = getSafeGitHubUrl(discussion.url, searchUrl);
+        elements.link.href = discussionUrl;
+        elements.link.textContent = '在 GitHub 参与讨论';
+        elements.list.replaceChildren();
+
+        const summary = document.createElement('div');
+        summary.className = 'comments-summary';
+
+        const count = document.createElement('span');
+        count.textContent = Number(discussion.totalCommentCount || 0) + ' 条评论';
+        summary.appendChild(count);
+
+        const action = document.createElement('a');
+        action.href = discussionUrl;
+        action.target = '_blank';
+        action.rel = 'noreferrer';
+        action.textContent = '在 GitHub 回复';
+        summary.appendChild(action);
+        elements.list.appendChild(summary);
+
+        if (discussion.comments.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'comments-empty';
+          empty.textContent = '还没有评论，欢迎留下第一条讨论。';
+          elements.list.appendChild(empty);
+        } else {
+          const thread = document.createElement('div');
+          thread.className = 'comment-thread';
+          discussion.comments.forEach((comment) => {
+            thread.appendChild(createCommentCard(comment, false));
+          });
+          elements.list.appendChild(thread);
+        }
+
+        elements.status.hidden = true;
+        elements.fallback.hidden = true;
+        elements.list.hidden = false;
+      }
+
+      function showCommentsFallback(elements, message, linkLabel) {
+        elements.status.hidden = true;
+        elements.list.hidden = true;
+        elements.fallbackMessage.textContent = message;
+        elements.link.textContent = linkLabel;
+        elements.fallback.hidden = false;
+      }
+
+      async function loadComments() {
+        setupCommentsRetry();
+
+        const status = document.querySelector('.comments-status');
+        const list = document.querySelector('.comments-list');
+        const fallback = document.querySelector('.comments-fallback');
+        const fallbackMessage = document.querySelector('.comments-fallback-message');
+        const discussionsLink = document.querySelector('.comments-discussions-link');
+        if (!status || !list || !fallback || !fallbackMessage || !discussionsLink) return;
+
+        if (window['__commentsRequestController']) {
+          window['__commentsRequestController'].abort();
+        }
+
+        const controller = new AbortController();
+        window['__commentsRequestController'] = controller;
+        const elements = {
+          status,
+          list,
+          fallback,
+          fallbackMessage,
+          link: discussionsLink,
+        };
+
+        status.hidden = false;
+        status.textContent = '正在加载评论…';
+        list.hidden = false;
+        list.replaceChildren();
+        fallback.hidden = true;
+
+        const term = getDiscussionTerm();
+        const searchUrl = getDiscussionSearchUrl(term);
+        discussionsLink.href = searchUrl;
+        discussionsLink.textContent = '前往 GitHub 评论';
+
+        const params = new URLSearchParams({
+          repo: COMMENTS_REPO,
+          term,
+          category: COMMENTS_CATEGORY,
+          strict: 'false',
+          first: '20',
+        });
+        const timeout = window.setTimeout(() => controller.abort(), 10000);
+
+        try {
+          const response = await fetch(COMMENTS_API + '?' + params, {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+            signal: controller.signal,
+          });
+          if (window['__commentsRequestController'] !== controller) return;
+
+          if (response.status === 404) {
+            discussionsLink.href = 'https://github.com/fine405/blog/discussions/new?category=general';
+            showCommentsFallback(
+              elements,
+              '还没有评论，欢迎在 GitHub 发起第一条讨论。',
+              '发起 GitHub 讨论'
+            );
+            return;
+          }
+          if (!response.ok) throw new Error('Comments request failed: ' + response.status);
+
+          renderDiscussion(await response.json(), elements, searchUrl);
+        } catch (error) {
+          if (window['__commentsRequestController'] !== controller) return;
+          const timedOut = error?.name === 'AbortError';
+          showCommentsFallback(
+            elements,
+            timedOut
+              ? '评论加载超时，但仍可在 GitHub Discussions 中查看和回复。'
+              : '评论暂时无法加载，但仍可在 GitHub Discussions 中查看和回复。',
+            '前往 GitHub 评论'
+          );
+        } finally {
+          window.clearTimeout(timeout);
+          if (window['__commentsRequestController'] === controller) {
+            window['__commentsRequestController'] = null;
+          }
+        }
+      }
+
+      function setupCommentsRetry() {
+        const retry = document.querySelector('.comments-retry');
+        if (!retry || retry.dataset.bound === 'true') return;
+        retry.dataset.bound = 'true';
+        retry.addEventListener('click', loadComments);
+      }
+
+      if (window['__commentsPageLoadHandler']) {
+        document.removeEventListener('astro:page-load', window['__commentsPageLoadHandler']);
+      }
+      window['__commentsPageLoadHandler'] = loadComments;
+      document.addEventListener('astro:page-load', window['__commentsPageLoadHandler']);
+      loadComments();
     })();
   </script>
 </BaseLayout>
@@ -687,6 +928,162 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     letter-spacing: -0.04em;
   }
 
+  .comments [hidden] {
+    display: none !important;
+  }
+
+  .comments-status,
+  .comments-fallback {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .comments-status {
+    margin: 0;
+  }
+
+  .comments-list,
+  :global(.comment-thread) {
+    display: grid;
+    gap: 1rem;
+  }
+
+  :global(.comments-summary) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 620;
+  }
+
+  :global(.comments-summary a),
+  :global(.comment-card a) {
+    color: var(--accent-strong);
+    text-decoration: none;
+  }
+
+  :global(.comments-summary a:hover),
+  :global(.comment-card a:hover) {
+    text-decoration: underline;
+  }
+
+  :global(.comments-empty) {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  :global(.comment-card) {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--glass-fill-strong);
+  }
+
+  :global(.comment-card-header),
+  :global(.comment-card-footer) {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+  }
+
+  :global(.comment-card-header) {
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  :global(.comment-author) {
+    font-weight: 680;
+  }
+
+  :global(.comment-association) {
+    padding: 0.12rem 0.42rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.66rem;
+  }
+
+  :global(.comment-date) {
+    margin-left: auto;
+    color: var(--text-secondary) !important;
+  }
+
+  :global(.comment-card-body) {
+    padding: 1rem;
+    color: var(--text-primary);
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  :global(.comment-card-footer) {
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+  }
+
+  :global(.comment-card-footer span) {
+    margin-right: auto;
+  }
+
+  :global(.comment-replies) {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 1rem 1rem 2rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--border);
+  }
+
+  :global(.comment-reply) {
+    background: color-mix(in srgb, var(--glass-fill-strong) 82%, transparent);
+  }
+
+  .comments-fallback {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--glass-fill-strong);
+  }
+
+  .comments-fallback p {
+    margin: 0;
+  }
+
+  .comments-fallback-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1rem;
+  }
+
+  .comments-discussions-link,
+  .comments-retry {
+    min-height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--glass-fill-strong);
+    color: var(--text-primary);
+    font: inherit;
+    font-weight: 620;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .comments-discussions-link:hover,
+  .comments-retry:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
   @media (max-width: 640px) {
     .post-header {
       margin-top: 2.5rem;
@@ -731,6 +1128,16 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       margin-left: -0.2rem;
       border-radius: 13px;
       font-size: 0.82rem;
+    }
+
+    :global(.comment-date) {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    :global(.comment-replies) {
+      margin-left: 0.75rem;
+      padding-left: 0.75rem;
     }
   }
 
