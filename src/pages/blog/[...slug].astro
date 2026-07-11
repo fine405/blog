@@ -54,7 +54,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       返回文章列表
     </a>
 
-    <header class="post-header">
+    <header class="post-header liquid-glass">
       <p class="eyebrow">FIELD NOTE</p>
       <h1>{post.data.title}</h1>
       <p class="post-description">{post.data.description}</p>
@@ -104,7 +104,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       </a>
     </footer>
 
-    <section class="comments" aria-labelledby="comments-title">
+    <section class="comments liquid-glass" aria-labelledby="comments-title">
       <div class="comments-heading">
         <p class="eyebrow">DISCUSSION</p>
         <h2 id="comments-title">评论</h2>
@@ -303,7 +303,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     width: 100%;
     height: 100%;
     display: block;
-    background: var(--accent);
+    background: linear-gradient(90deg, #6fa9ff, var(--accent), #9d7cff);
+    box-shadow: 0 0 16px rgba(91, 133, 242, 0.5);
     transform: scaleX(0);
     transform-origin: left center;
     will-change: transform;
@@ -320,23 +321,36 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+    padding: 0.58rem 0.82rem;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
     color: var(--text-secondary);
     font-size: 0.82rem;
     font-weight: 600;
     text-decoration: none;
-    transition: color 180ms ease, transform 180ms var(--ease-out);
+    transition: color 180ms ease, transform 180ms var(--ease-out), background-color 180ms ease, border-color 180ms ease;
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
   }
 
   .back-link:hover,
   .post-footer a:hover {
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
     color: var(--text-primary);
     transform: translateX(-3px);
   }
 
   .post-header {
-    max-width: 900px;
-    margin-top: 3.5rem;
-    padding-bottom: 3.25rem;
+    max-width: 1000px;
+    margin-top: 2.25rem;
+    padding: clamp(1.7rem, 4vw, 3.4rem);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: var(--radius-xl);
+    background: var(--glass-fill);
   }
 
   .eyebrow {
@@ -347,6 +361,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .post-header h1 {
+    max-width: 900px;
     margin-top: 1.05rem;
     color: var(--text-primary);
     font-size: clamp(2.65rem, 5.2vw, 4.75rem);
@@ -398,9 +413,9 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   .tag {
     padding: 0.38rem 0.7rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface-soft);
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
     color: var(--text-secondary);
     font-size: 0.72rem;
     font-weight: 590;
@@ -420,16 +435,16 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .cover {
-    margin: 0 0 4rem;
+    margin: 2.5rem 0 3.5rem;
   }
 
   .cover img {
     width: 100%;
     max-height: 560px;
     display: block;
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
     object-fit: cover;
   }
 
@@ -442,12 +457,21 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .content {
-    max-width: 800px;
+    max-width: 860px;
     margin: 0 auto;
+    padding: clamp(1.45rem, 4vw, 3.5rem);
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: var(--radius-xl);
+    background: var(--reading-surface);
+    box-shadow: 0 22px 64px rgba(44, 63, 101, 0.1), inset 0 1px 0 var(--glass-highlight);
     color: var(--text);
     font-size: clamp(1rem, 1.25vw, 1.06rem);
     line-height: 1.95;
     overflow-wrap: anywhere;
+  }
+
+  .post-header + .content {
+    margin-top: 2.5rem;
   }
 
   .content :global(h2),
@@ -517,10 +541,11 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     position: relative;
     margin: 2rem 0;
     padding: 1.25rem 1.4rem 1.25rem 1.6rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-stroke-muted);
     border-left: 3px solid var(--accent);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    background: var(--surface-soft);
+    background: var(--glass-fill);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
     color: var(--text-secondary);
   }
 
@@ -549,8 +574,12 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     margin: 2rem 0;
     display: block;
     overflow-x: auto;
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-md);
+    background: var(--surface-soft);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    backdrop-filter: blur(16px) saturate(1.15);
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.85rem;
@@ -567,7 +596,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .content :global(th) {
-    background: var(--bg-secondary);
+    background: var(--glass-fill-strong);
     color: var(--text-primary);
     font-weight: 650;
   }
@@ -611,9 +640,10 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     min-width: 54px;
     height: 30px;
     padding: 0 0.65rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface-solid);
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 10px;
+    background: var(--glass-fill-strong);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     color: var(--text-secondary);
     font-size: 0.69rem;
     font-weight: 620;
@@ -629,17 +659,20 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .post-footer {
-    max-width: 800px;
+    max-width: 860px;
     margin: 4.5rem auto 0;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
   }
 
   .comments {
-    max-width: 800px;
+    max-width: 860px;
     margin: 5rem auto 0;
-    padding-top: 3rem;
-    border-top: 1px solid var(--border);
+    padding: clamp(1.4rem, 3vw, 2.25rem);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: var(--radius-lg);
+    background: var(--glass-fill);
   }
 
   .comments-heading {
@@ -657,7 +690,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   @media (max-width: 640px) {
     .post-header {
       margin-top: 2.5rem;
-      padding-bottom: 2.5rem;
+      padding: 1.4rem;
     }
 
     .post-header h1 {
@@ -683,6 +716,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     }
 
     .content {
+      padding: 1.25rem;
+      border-radius: var(--radius-lg);
       font-size: 1rem;
       line-height: 1.9;
     }

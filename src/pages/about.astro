@@ -58,7 +58,7 @@ const features = [
         </p>
       </div>
 
-      <aside class="profile-card" aria-label="个人简介与联系方式">
+      <aside class="profile-card liquid-glass" aria-label="个人简介与联系方式">
         <div class="profile-topline">
           <span>CURRENT FOCUS</span>
           <BrainCircuit size={19} stroke-width={1.7} aria-hidden="true" />
@@ -98,7 +98,7 @@ const features = [
       </div>
       <div class="stack-grid">
         {techGroups.map(({ icon: Icon, title, items }) => (
-          <div class="stack-card">
+          <div class="stack-card liquid-glass">
             <span class="card-icon" aria-hidden="true">
               <Icon size={20} stroke-width={1.7} />
             </span>
@@ -117,7 +117,7 @@ const features = [
       </div>
       <div class="feature-grid">
         {features.map(({ icon: Icon, title, description }) => (
-          <div class="feature-card">
+          <div class="feature-card liquid-glass">
             <span class="card-icon" aria-hidden="true">
               <Icon size={19} stroke-width={1.7} />
             </span>
@@ -181,10 +181,10 @@ const features = [
 
   .profile-card {
     padding: 1.75rem;
-    border: 1px solid var(--border);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-lg);
-    background: linear-gradient(145deg, var(--surface-solid), var(--surface-soft));
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(145deg, var(--glass-fill-strong), var(--glass-fill));
   }
 
   .profile-topline {
@@ -254,8 +254,10 @@ const features = [
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 0.45rem;
-    border: 1px solid var(--border);
-    border-radius: 11px;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 13px;
+    background: var(--surface-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     color: var(--text-secondary);
     font-size: 0.76rem;
     font-weight: 610;
@@ -268,8 +270,8 @@ const features = [
   }
 
   .contact-links a:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
     color: var(--text-primary);
     transform: translateY(-2px);
   }
@@ -311,8 +313,9 @@ const features = [
 
   .stack-card,
   .feature-card {
-    border: 1px solid var(--border);
-    background: var(--surface-soft);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    background: var(--glass-fill);
     transition:
       transform 220ms var(--ease-out),
       border-color 180ms ease,
@@ -322,9 +325,11 @@ const features = [
 
   .stack-card:hover,
   .feature-card:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
     transform: translateY(-3px);
   }
 
@@ -343,8 +348,10 @@ const features = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: var(--accent-soft);
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.34), var(--accent-soft));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
     color: var(--accent-strong);
     transition: transform 220ms var(--ease-out);
   }

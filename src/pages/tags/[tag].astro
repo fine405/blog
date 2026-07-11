@@ -58,7 +58,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   <ol class="post-list">
     {posts.map((post, index) => (
       <li data-reveal style={`--reveal-delay: ${Math.min(index * 45, 180)}ms`}>
-        <a href={`/blog/${post.slug}`}>
+        <a href={`/blog/${post.slug}`} class="liquid-glass">
           <span class="post-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <article>
             <time datetime={post.date.toISOString()}>
@@ -88,14 +88,23 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+    padding: 0.58rem 0.82rem;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     color: var(--text-secondary);
     font-size: 0.82rem;
     font-weight: 600;
     text-decoration: none;
-    transition: color 180ms ease, transform 180ms var(--ease-out);
+    transition: color 180ms ease, transform 180ms var(--ease-out), background-color 180ms ease, border-color 180ms ease;
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
   }
 
   .back-link:hover {
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
     color: var(--text-primary);
     transform: translateX(-3px);
   }
@@ -144,9 +153,10 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     grid-template-columns: 54px minmax(0, 1fr) 42px;
     align-items: start;
     gap: 1.15rem;
-    border: 1px solid var(--border);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-md);
-    background: var(--surface-soft);
+    background: var(--glass-fill);
     color: inherit;
     text-decoration: none;
     transition:
@@ -157,9 +167,11 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   }
 
   .post-list a:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
     transform: translateY(-3px);
   }
 

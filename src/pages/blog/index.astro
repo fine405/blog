@@ -37,7 +37,7 @@ const posts = rawPosts.map((post) => {
       <h1>所有文章</h1>
       <p class="page-description">关于 AI 工程、软件架构与开发效率的长期记录。</p>
     </div>
-    <div class="article-count" aria-label={`共 ${posts.length} 篇文章`}>
+    <div class="article-count liquid-glass" aria-label={`共 ${posts.length} 篇文章`}>
       <FileText size={20} stroke-width={1.7} aria-hidden="true" />
       <span><strong>{posts.length}</strong> 篇文章</span>
     </div>
@@ -46,7 +46,7 @@ const posts = rawPosts.map((post) => {
   <ol class="post-list">
     {posts.map((post, index) => (
       <li data-reveal style={`--reveal-delay: ${Math.min(index * 45, 180)}ms`}>
-        <a href={`/blog/${post.slug}`}>
+        <a href={`/blog/${post.slug}`} class="liquid-glass">
           <span class="post-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <article>
             <div class="meta">
@@ -117,9 +117,10 @@ const posts = rawPosts.map((post) => {
     display: inline-flex;
     align-items: center;
     gap: 0.65rem;
-    border: 1px solid var(--border);
-    border-radius: 13px;
-    background: var(--surface-soft);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 16px;
+    background: var(--glass-fill);
     color: var(--text-secondary);
     font-size: 0.82rem;
   }
@@ -147,9 +148,9 @@ const posts = rawPosts.map((post) => {
     align-items: start;
     gap: 1.2rem;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-md);
-    background: var(--surface-soft);
+    background: var(--glass-fill);
     color: inherit;
     text-decoration: none;
     transition:
@@ -164,6 +165,7 @@ const posts = rawPosts.map((post) => {
     position: absolute;
     inset: 0 auto 0 0;
     width: 3px;
+    z-index: 4;
     background: var(--accent);
     opacity: 0;
     transform: scaleY(0.4);
@@ -171,9 +173,11 @@ const posts = rawPosts.map((post) => {
   }
 
   .post-list a:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
     transform: translateY(-3px);
   }
 

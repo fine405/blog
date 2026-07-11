@@ -60,9 +60,12 @@
 
 <style is:global>
   .goverlay {
-    background: rgba(9, 12, 18, 0.9) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(0.8);
-    backdrop-filter: blur(16px) saturate(0.8);
+    background:
+      radial-gradient(circle at 18% 8%, rgba(68, 111, 224, 0.2), transparent 32rem),
+      radial-gradient(circle at 82% 16%, rgba(137, 83, 211, 0.16), transparent 28rem),
+      rgba(5, 9, 17, 0.82) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.15);
+    backdrop-filter: blur(24px) saturate(1.15);
   }
 
   .gslide-description {
@@ -75,23 +78,30 @@
   }
 
   .gclose, .gnext, .gprev {
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 14px !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.26) !important;
+    border-radius: 16px !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07)) !important;
     width: 44px !important;
     height: 44px !important;
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
     transition: background-color 180ms ease, transform 180ms ease !important;
   }
 
   .gclose:hover, .gnext:hover, .gprev:hover {
-    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.38) !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.11)) !important;
     transform: translateY(-2px) !important;
   }
 
   .gslide-image img {
     max-height: 90vh !important;
-    border-radius: 14px !important;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
   }
 
   .gslide-title {

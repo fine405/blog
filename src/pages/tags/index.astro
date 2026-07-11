@@ -31,7 +31,7 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))]
   <ul class="tag-list">
     {tags.map((tag, index) => (
       <li data-reveal style={`--reveal-delay: ${Math.min(index * 40, 160)}ms`}>
-        <a href={`/tags/${encodeURIComponent(tag.name)}`}>
+        <a href={`/tags/${encodeURIComponent(tag.name)}`} class="liquid-glass">
           <span class="tag-icon" aria-hidden="true">
             <Hash size={19} stroke-width={1.8} />
           </span>
@@ -94,9 +94,10 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))]
     grid-template-columns: 40px minmax(0, 1fr) 28px;
     align-items: center;
     gap: 0.9rem;
-    border: 1px solid var(--border);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-md);
-    background: var(--surface-soft);
+    background: var(--glass-fill);
     color: inherit;
     text-decoration: none;
     transition:
@@ -107,9 +108,11 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))]
   }
 
   .tag-list a:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
     transform: translateY(-3px);
   }
 
@@ -119,8 +122,10 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))]
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: var(--accent-soft);
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.34), var(--accent-soft));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
     color: var(--accent-strong);
     transition: transform 220ms var(--ease-out);
   }

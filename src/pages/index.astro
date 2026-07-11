@@ -85,7 +85,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
       </a>
     </div>
 
-    <a href={`/blog/${featuredPost.slug}`} class="featured-post" data-reveal>
+    <a href={`/blog/${featuredPost.slug}`} class="featured-post liquid-glass" data-reveal>
       <article class="featured-main">
         <div class="featured-meta">
           <span class="latest-label">最新发布</span>
@@ -118,7 +118,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     <ol class="post-list">
       {remainingPosts.map((post, index) => (
         <li data-reveal style={`--reveal-delay: ${index * 55}ms`}>
-          <a href={`/blog/${post.slug}`}>
+          <a href={`/blog/${post.slug}`} class="liquid-glass">
             <span class="post-number" aria-hidden="true">{String(index + 2).padStart(2, '0')}</span>
             <article>
               <div class="post-meta">
@@ -218,7 +218,8 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     justify-content: center;
     gap: 0.55rem;
     border: 1px solid transparent;
-    border-radius: 12px;
+    border-radius: 15px;
+    corner-shape: squircle;
     font-size: 0.9rem;
     font-weight: 650;
     text-decoration: none;
@@ -238,17 +239,25 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   }
 
   .button-primary {
-    background: var(--text-primary);
-    box-shadow: 0 9px 24px rgba(16, 21, 34, 0.16);
-    color: var(--bg);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: linear-gradient(145deg, #5b86ee, #3159c5 72%);
+    box-shadow:
+      0 12px 30px rgba(47, 87, 190, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(18, 52, 137, 0.35);
+    color: #fff;
   }
 
   [data-theme='dark'] .button-primary {
-    color: #111521;
+    background: linear-gradient(145deg, #84a5ff, #5578df 72%);
+    color: #071123;
   }
 
   .button-primary:hover {
-    box-shadow: 0 13px 32px rgba(16, 21, 34, 0.22);
+    box-shadow:
+      0 16px 38px rgba(47, 87, 190, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.46),
+      inset 0 -1px 0 rgba(18, 52, 137, 0.3);
   }
 
   .button-primary :global(svg),
@@ -262,14 +271,17 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   }
 
   .button-secondary {
-    border-color: var(--border);
-    background: var(--surface-soft);
+    border-color: var(--glass-stroke-muted);
+    background: var(--glass-fill);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 24px rgba(50, 69, 108, 0.08);
     color: var(--text-primary);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
   }
 
   .button-secondary:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-solid);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
   }
 
   .hero-copy > .eyebrow,
@@ -336,24 +348,31 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   }
 
   .featured-post {
-    padding: 2.3rem 0.25rem;
+    padding: clamp(1.8rem, 3vw, 2.4rem);
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.72fr);
     align-items: stretch;
-    gap: clamp(2.5rem, 7vw, 6.5rem);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    gap: clamp(2.3rem, 5vw, 4.8rem);
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: var(--radius-xl);
+    background: var(--glass-fill);
     color: inherit;
     text-decoration: none;
     transition:
-      padding 240ms var(--ease-out),
-      background-color 200ms ease;
+      transform 240ms var(--ease-out),
+      border-color 200ms ease,
+      background-color 200ms ease,
+      box-shadow 240ms ease;
   }
 
   .featured-post:hover {
-    padding-right: 0.9rem;
-    padding-left: 0.9rem;
-    background: var(--surface-soft);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
+    transform: translateY(-4px);
   }
 
   .featured-main {
@@ -405,7 +424,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--glass-stroke-muted);
   }
 
   .featured-summary > p {
@@ -430,8 +449,9 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
 
   .featured-tags span {
     padding: 0.28rem 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 7px;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: 9px;
+    background: var(--surface-soft);
     color: var(--text-tertiary);
     font-size: 0.66rem;
   }
@@ -455,28 +475,42 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   }
 
   .post-list {
+    margin-top: 0.85rem;
+    display: grid;
+    gap: 0.75rem;
     list-style: none;
   }
 
   .post-list li {
-    border-bottom: 1px solid var(--border);
+    border: 0;
   }
 
   .post-list a {
-    padding: 1.8rem 0.25rem;
+    padding: 1.65rem;
     display: grid;
     grid-template-columns: 54px minmax(0, 1fr) 42px;
     align-items: center;
     gap: 1.25rem;
+    overflow: hidden;
+    border: 1px solid var(--glass-stroke-muted);
+    border-radius: var(--radius-md);
+    background: var(--glass-fill);
     color: inherit;
     text-decoration: none;
-    transition: padding 220ms var(--ease-out), background-color 180ms ease;
+    transition:
+      transform 220ms var(--ease-out),
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 220ms ease;
   }
 
   .post-list a:hover {
-    padding-right: 0.9rem;
-    padding-left: 0.9rem;
-    background: var(--surface-soft);
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
+    box-shadow:
+      var(--glass-shadow-hover),
+      inset 0 1px 0 var(--glass-highlight);
+    transform: translateY(-3px);
   }
 
   .post-number {
@@ -606,14 +640,13 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     }
 
     .featured-post {
-      padding: 1.6rem 0;
+      padding: 1.45rem;
       grid-template-columns: 1fr;
       gap: 1.35rem;
     }
 
     .featured-post:hover {
-      padding-right: 0.25rem;
-      padding-left: 0.25rem;
+      transform: translateY(-2px);
     }
 
     .featured-post h3 {
@@ -632,14 +665,13 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     }
 
     .post-list a {
-      padding: 1.45rem 0;
+      padding: 1.25rem;
       grid-template-columns: minmax(0, 1fr) 36px;
       gap: 0.8rem;
     }
 
     .post-list a:hover {
-      padding-right: 0.25rem;
-      padding-left: 0.25rem;
+      transform: translateY(-2px);
     }
 
     .post-number {
