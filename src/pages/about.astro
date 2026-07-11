@@ -1,5 +1,41 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  ArrowUpRight,
+  Boxes,
+  BrainCircuit,
+  CalendarClock,
+  CodeXml,
+  Database,
+  GitFork,
+  Images,
+  Mail,
+  MessagesSquare,
+  Radio,
+  Rocket,
+  Search,
+  Server,
+  SunMedium,
+  Tags,
+} from '@lucide/astro';
+
+const techGroups = [
+  { icon: CodeXml, title: 'Frontend', items: 'TypeScript · React · React Native · Vue · Astro' },
+  { icon: Server, title: 'Backend', items: 'Node.js · Bun · Python · Go' },
+  { icon: Database, title: 'Data', items: 'PostgreSQL · MongoDB · Redis' },
+  { icon: Boxes, title: 'Infrastructure', items: 'Docker · Kubernetes · CI/CD' },
+];
+
+const features = [
+  { icon: Rocket, title: 'Astro 驱动', description: '静态生成带来快速、稳定的阅读体验。' },
+  { icon: Tags, title: '标签分类', description: '用主题脉络组织文章，快速定位内容。' },
+  { icon: CalendarClock, title: 'Git 时间追踪', description: '从提交记录自动获取发布和更新时间。' },
+  { icon: Images, title: '图片灯箱', description: '文章图片支持沉浸式全屏预览与导航。' },
+  { icon: Radio, title: 'RSS 订阅', description: '在喜欢的阅读器里持续接收内容更新。' },
+  { icon: Search, title: 'SEO 优化', description: '完善的开放图谱与结构化数据支持。' },
+  { icon: MessagesSquare, title: 'Giscus 评论', description: '基于 GitHub Discussions 的开放讨论。' },
+  { icon: SunMedium, title: '双主题', description: '以浅色为基准，同时保留舒适的深色阅读。' },
+];
 ---
 
 <BaseLayout
@@ -10,183 +46,408 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   schemaTitle="关于 Fine"
 >
   <article class="about">
-    <h1>关于我</h1>
-    <p class="tagline">
-      <span class="highlight">Vibe Coding Engineer</span> · 在 AI 浪潮中寻找人机协作的最佳节奏
-    </p>
-    <p>
-      这个博客是我记录学习历程、分享技术心得的地方。写作是最好的学习方式之一，
-      通过整理和输出知识，能够加深对技术的理解。
-    </p>
-    
-    <h2>技术栈</h2>
-    <ul>
-      <li>前端：TypeScript, React, React Native, Vue, Astro</li>
-      <li>后端：Node.js, Bun, Python, Go</li>
-      <li>数据库：PostgreSQL, MongoDB, Redis</li>
-      <li>DevOps：Docker, Kubernetes, CI/CD</li>
-      <li>AI 工具使用偏好：Codex &gt; Claude Code &gt; 其他；Token 消耗级别：日均亿级，月均百亿级</li>
-    </ul>
+    <section class="about-hero">
+      <div class="about-copy">
+        <p class="eyebrow">ABOUT FINE</p>
+        <h1>用工程思维，<br />探索人机协作的边界。</h1>
+        <p class="lead">
+          我是一名 <strong>Vibe Coding Engineer</strong>，关注 AI 如何真正进入软件工程流程，也持续记录那些能让复杂工作变得更清晰的方法。
+        </p>
+        <p>
+          这个博客是我的公开工作笔记。写作帮助我把模糊经验沉淀成可验证、可迁移的知识，也希望它能为正在解决相似问题的人节省一点时间。
+        </p>
+      </div>
 
-    <h2>联系方式</h2>
-    <p>
-      如果你有任何问题或想法，欢迎通过以下方式联系我：
-    </p>
-    <ul>
-      <li>GitHub: <a href="https://github.com/fine405" target="_blank" rel="noopener noreferrer">@fine405</a></li>
-      <li>Email: <a href="mailto:bqy.fine@gmail.com">bqy.fine@gmail.com</a></li>
-    </ul>
+      <aside class="profile-card" aria-label="个人简介与联系方式">
+        <div class="profile-topline">
+          <span>CURRENT FOCUS</span>
+          <BrainCircuit size={19} stroke-width={1.7} aria-hidden="true" />
+        </div>
+        <h2>AI-native engineering</h2>
+        <p>让模型、工具与工程规范形成可持续的协作系统。</p>
+        <dl>
+          <div>
+            <dt>工作方式</dt>
+            <dd>Build · Measure · Share</dd>
+          </div>
+          <div>
+            <dt>AI 工具偏好</dt>
+            <dd>Codex · Claude Code</dd>
+          </div>
+        </dl>
+        <div class="contact-links">
+          <a href="https://github.com/fine405" target="_blank" rel="noopener noreferrer">
+            <GitFork size={17} stroke-width={1.8} aria-hidden="true" />
+            GitHub
+            <ArrowUpRight size={15} stroke-width={1.8} aria-hidden="true" />
+          </a>
+          <a href="mailto:bqy.fine@gmail.com">
+            <Mail size={17} stroke-width={1.8} aria-hidden="true" />
+            Email
+            <ArrowUpRight size={15} stroke-width={1.8} aria-hidden="true" />
+          </a>
+        </div>
+      </aside>
+    </section>
 
-    <h2>博客特性</h2>
-    <div class="features">
-      <div class="feature">
-        <span class="icon">🚀</span>
-        <div>
-          <h3>Astro 驱动</h3>
-          <p>基于 Astro 构建，静态生成带来极致性能</p>
-        </div>
+    <section class="about-section" aria-labelledby="stack-title" data-reveal>
+      <div class="section-heading">
+        <p class="section-kicker">TOOLKIT</p>
+        <h2 id="stack-title">技术栈</h2>
+        <p>根据问题选择工具，偏爱清晰、可组合、能长期维护的技术方案。</p>
       </div>
-      <div class="feature">
-        <span class="icon">🏷️</span>
-        <div>
-          <h3>标签分类</h3>
-          <p>文章按标签归类，快速找到感兴趣的内容</p>
-        </div>
+      <div class="stack-grid">
+        {techGroups.map(({ icon: Icon, title, items }) => (
+          <div class="stack-card">
+            <span class="card-icon" aria-hidden="true">
+              <Icon size={20} stroke-width={1.7} />
+            </span>
+            <h3>{title}</h3>
+            <p>{items}</p>
+          </div>
+        ))}
       </div>
-      <div class="feature">
-        <span class="icon">📅</span>
-        <div>
-          <h3>Git 时间追踪</h3>
-          <p>自动从 Git 提交记录获取发布和更新时间</p>
-        </div>
+    </section>
+
+    <section class="about-section" aria-labelledby="features-title" data-reveal>
+      <div class="section-heading">
+        <p class="section-kicker">THE BLOG</p>
+        <h2 id="features-title">博客特性</h2>
+        <p>围绕阅读体验构建的一组轻量能力，不打扰内容本身。</p>
       </div>
-      <div class="feature">
-        <span class="icon">🖼️</span>
-        <div>
-          <h3>图片灯箱</h3>
-          <p>点击图片全屏预览，支持左右导航浏览</p>
-        </div>
+      <div class="feature-grid">
+        {features.map(({ icon: Icon, title, description }) => (
+          <div class="feature-card">
+            <span class="card-icon" aria-hidden="true">
+              <Icon size={19} stroke-width={1.7} />
+            </span>
+            <div>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </div>
+          </div>
+        ))}
       </div>
-      <div class="feature">
-        <span class="icon">📡</span>
-        <div>
-          <h3>RSS 订阅</h3>
-          <p>支持 RSS Feed，用你喜欢的阅读器订阅</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="icon">🔍</span>
-        <div>
-          <h3>SEO 优化</h3>
-          <p>完善的 Open Graph 和结构化数据支持</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="icon">💬</span>
-        <div>
-          <h3>Giscus 评论</h3>
-          <p>基于 GitHub Discussions 的评论系统</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="icon">🌓</span>
-        <div>
-          <h3>主题切换</h3>
-          <p>支持亮色/暗色主题，自动跟随系统偏好</p>
-        </div>
-      </div>
-    </div>
+    </section>
   </article>
 </BaseLayout>
 
 <style>
-  .about h1 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .about h2 {
-    font-size: 1.25rem;
-    margin: 2rem 0 1rem;
-  }
-
-  .about p {
-    line-height: 1.8;
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-  }
-
-  .tagline {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    margin-bottom: 1.5rem;
-  }
-
-  .tagline .highlight {
-    background: linear-gradient(
-      135deg,
-      #667eea,
-      #764ba2,
-      #f093fb,
-      #667eea
-    );
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 600;
-    animation: gradient-shift 8s ease infinite;
-  }
-
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  .about ul {
-    padding-left: 1.5rem;
-    line-height: 1.8;
-    color: var(--text-secondary);
-  }
-
-  .about li {
-    margin-bottom: 0.5rem;
-  }
-
-  .features {
+  .about-hero {
+    padding: 2.75rem 0 6rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.2fr) minmax(310px, 0.72fr);
+    align-items: center;
+    gap: clamp(3rem, 7vw, 7rem);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow,
+  .section-kicker {
+    color: var(--accent-strong);
+    font-size: 0.7rem;
+    font-weight: 720;
+    letter-spacing: 0.18em;
+  }
+
+  .about-copy h1 {
+    max-width: 760px;
     margin-top: 1rem;
+    color: var(--text-primary);
+    font-size: clamp(3rem, 4.8vw, 4.25rem);
+    font-weight: 710;
+    letter-spacing: -0.065em;
+    line-height: 1.08;
   }
 
-  .feature {
+  .about-copy > p:not(.eyebrow) {
+    max-width: 700px;
+    margin-top: 1.25rem;
+    color: var(--text-secondary);
+    font-size: 0.98rem;
+    line-height: 1.85;
+  }
+
+  .about-copy .lead {
+    margin-top: 1.75rem;
+    color: var(--text);
+    font-size: 1.08rem;
+  }
+
+  .lead strong {
+    color: var(--accent-strong);
+    font-weight: 680;
+  }
+
+  .profile-card {
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(145deg, var(--surface-solid), var(--surface-soft));
+    box-shadow: var(--shadow-md);
+  }
+
+  .profile-topline {
     display: flex;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    transition: transform 0.2s;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--accent-strong);
+    font-size: 0.66rem;
+    font-weight: 720;
+    letter-spacing: 0.15em;
   }
 
-  .feature:hover {
+  .profile-card h2 {
+    margin-top: 2.8rem;
+    color: var(--text-primary);
+    font-size: clamp(1.55rem, 2.7vw, 2.15rem);
+    font-weight: 680;
+    letter-spacing: -0.045em;
+  }
+
+  .profile-card > p {
+    margin-top: 0.8rem;
+    color: var(--text-secondary);
+    font-size: 0.87rem;
+    line-height: 1.7;
+  }
+
+  .profile-card dl {
+    margin-top: 1.8rem;
+    padding: 1.25rem 0;
+    display: grid;
+    gap: 1rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-card dl div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .profile-card dt {
+    color: var(--text-tertiary);
+    font-size: 0.73rem;
+  }
+
+  .profile-card dd {
+    color: var(--text-primary);
+    font-size: 0.76rem;
+    font-weight: 620;
+    text-align: right;
+  }
+
+  .contact-links {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .contact-links a {
+    min-height: 42px;
+    padding: 0 0.75rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    font-weight: 610;
+    text-decoration: none;
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      transform 180ms var(--ease-out);
+  }
+
+  .contact-links a:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-solid);
+    color: var(--text-primary);
     transform: translateY(-2px);
   }
 
-  .feature .icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
+  .about-section {
+    padding: 6rem 0 0;
   }
 
-  .feature h3 {
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
+  .section-heading {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.4fr) minmax(260px, 0.6fr) minmax(300px, 0.8fr);
+    align-items: end;
+    gap: 2rem;
   }
 
-  .feature p {
-    font-size: 0.85rem;
+  .section-heading h2 {
+    color: var(--text-primary);
+    font-size: clamp(2rem, 3.6vw, 3rem);
+    font-weight: 690;
+    letter-spacing: -0.05em;
+  }
+
+  .section-heading > p:last-child {
     color: var(--text-secondary);
-    line-height: 1.4;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .stack-grid,
+  .feature-grid {
+    margin-top: 2rem;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .stack-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .stack-card,
+  .feature-card {
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    transition:
+      transform 220ms var(--ease-out),
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .stack-card:hover,
+  .feature-card:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-3px);
+  }
+
+  .stack-card {
+    min-height: 210px;
+    padding: 1.4rem;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: var(--radius-md);
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    transition: transform 220ms var(--ease-out);
+  }
+
+  .stack-card:hover .card-icon,
+  .feature-card:hover .card-icon {
+    transform: rotate(-4deg) scale(1.04);
+  }
+
+  .stack-card h3 {
+    margin-top: auto;
+    color: var(--text-primary);
+    font-size: 0.93rem;
+    font-weight: 650;
+  }
+
+  .stack-card p {
+    margin-top: 0.55rem;
+    color: var(--text-secondary);
+    font-size: 0.77rem;
+    line-height: 1.7;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feature-card {
+    min-height: 120px;
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .feature-card h3 {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+
+  .feature-card p {
+    margin-top: 0.42rem;
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 960px) {
+    .about-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-card {
+      max-width: 620px;
+    }
+
+    .section-heading {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .section-kicker {
+      grid-column: 1 / -1;
+    }
+
+    .stack-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .about-hero {
+      padding: 1.5rem 0 4rem;
+      gap: 3rem;
+    }
+
+    .about-copy h1 {
+      font-size: clamp(2.75rem, 13.7vw, 4rem);
+    }
+
+    .contact-links,
+    .stack-grid,
+    .feature-grid,
+    .section-heading {
+      grid-template-columns: 1fr;
+    }
+
+    .about-section {
+      padding-top: 4.5rem;
+    }
+
+    .section-heading {
+      gap: 0.75rem;
+    }
+
+    .section-heading > p:last-child {
+      margin-top: 0.3rem;
+    }
+
+    .stack-card {
+      min-height: 175px;
+    }
   }
 </style>

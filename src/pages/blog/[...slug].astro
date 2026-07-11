@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { ArrowLeft, CalendarDays, Clock3, RefreshCw } from '@lucide/astro';
 import ImageLightbox from '../../components/ImageLightbox.astro';
 import { getBlogDates } from '../../utils/git-dates';
 import { calculateReadingTime } from '../../utils/reading-time';
@@ -18,7 +19,6 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await post.render();
 
-// 使用 Git 时间
 const { date, updatedDate } = getBlogDates(
   post.slug,
   post.data.date,
@@ -26,13 +26,17 @@ const { date, updatedDate } = getBlogDates(
   post.data.disableUpdateDate
 );
 
-// 计算阅读时间（区分中英文）
 const readingTime = calculateReadingTime(post.body);
 const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
+const fallbackDate = date.toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
 ---
 
-<BaseLayout 
-  title={`${post.data.title} - Fine`} 
+<BaseLayout
+  title={`${post.data.title} - Fine`}
   description={post.data.description}
   image={post.data.cover?.url}
   imageAlt={coverAlt}
@@ -42,338 +46,671 @@ const coverAlt = post.data.cover?.alt || `${post.data.title} 封面图`;
   modifiedTime={updatedDate}
   tags={post.data.tags}
 >
+  <div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
+
   <article class="post">
-   
-    <header>
+    <a href="/blog" class="back-link">
+      <ArrowLeft size={16} stroke-width={1.8} aria-hidden="true" />
+      返回文章列表
+    </a>
+
+    <header class="post-header">
+      <p class="eyebrow">FIELD NOTE</p>
       <h1>{post.data.title}</h1>
+      <p class="post-description">{post.data.description}</p>
+
       <div class="meta">
-        <span class="time-info">
-          <time datetime={date.toISOString()} class="publish-time">
-            发布于 <span class="local-time"></span>
-          </time>
-          {updatedDate && (
-            <span 
-              class="updated" 
-              data-updated={updatedDate.toISOString()}
-            >
-              · <span class="relative-time"></span>更新
-            </span>
-          )}
+        <time datetime={date.toISOString()} class="publish-time">
+          <CalendarDays size={15} stroke-width={1.8} aria-hidden="true" />
+          <span class="local-time">{fallbackDate}</span>
+        </time>
+        {updatedDate && (
+          <span class="updated" data-updated={updatedDate.toISOString()}>
+            <RefreshCw size={14} stroke-width={1.8} aria-hidden="true" />
+            <span class="relative-time">近期</span>更新
+          </span>
+        )}
+        <span class="reading-time">
+          <Clock3 size={15} stroke-width={1.8} aria-hidden="true" />
+          阅读约 {readingTime} 分钟
         </span>
-        <span class="reading-time">· 阅读约 {readingTime} 分钟</span>
       </div>
+
       {post.data.tags && (
-        <div class="tags">
-          {post.data.tags.map((tag: string) => <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>)}
+        <div class="tags" aria-label="文章标签">
+          {post.data.tags.map((tag: string) => (
+            <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+          ))}
         </div>
       )}
     </header>
-     {post.data.cover && (
+
+    {post.data.cover && (
       <figure class="cover">
-        <img src={post.data.cover.url} alt={coverAlt} />
+        <img src={post.data.cover.url} alt={coverAlt} loading="eager" />
         <figcaption>{coverAlt}</figcaption>
       </figure>
     )}
-    <div class="content">
+
+    <div class="content" id="article-content">
       <Content />
     </div>
     <ImageLightbox />
 
-    <script is:inline>
-      (function() {
-        function formatRelativeTime(date) {
-          const now = new Date();
-          const diff = now.getTime() - date.getTime();
-          const minutes = Math.floor(diff / 60000);
-          const hours = Math.floor(diff / 3600000);
-          const days = Math.floor(diff / 86400000);
-          
-          if (minutes < 1) return '刚刚';
-          if (minutes < 60) return minutes + ' 分钟前';
-          if (hours < 24) return hours + ' 小时前';
-          if (days < 30) return days + ' 天前';
-          if (days < 365) return Math.floor(days / 30) + ' 个月前';
-          return Math.floor(days / 365) + ' 年前';
-        }
-
-        function formatLocalTime(date) {
-          return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-        }
-
-        function updateTimes() {
-          // 更新发布时间
-          var timeEl = document.querySelector('.publish-time');
-          if (timeEl) {
-            var dateStr = timeEl.getAttribute('datetime');
-            var localTimeEl = timeEl.querySelector('.local-time');
-            if (dateStr && localTimeEl) {
-              localTimeEl.textContent = formatLocalTime(new Date(dateStr));
-            }
-          }
-          // 更新相对时间和 title
-          var updatedEl = document.querySelector('.updated[data-updated]');
-          if (updatedEl) {
-            var updateDateStr = updatedEl.getAttribute('data-updated');
-            if (updateDateStr) {
-              var updateDate = new Date(updateDateStr);
-              updatedEl.setAttribute('title', formatLocalTime(updateDate));
-              var relativeTimeEl = updatedEl.querySelector('.relative-time');
-              if (relativeTimeEl) {
-                relativeTimeEl.textContent = formatRelativeTime(updateDate);
-              }
-            }
-          }
-        }
-
-        // 立即执行
-        updateTimes();
-        // View Transitions 路由切换后重新执行（先移除旧监听器，避免重复绑定）
-        if (window['__postUpdateTimesHandler']) {
-          document.removeEventListener('astro:page-load', window['__postUpdateTimesHandler']);
-        }
-        window['__postUpdateTimesHandler'] = updateTimes;
-        document.addEventListener('astro:page-load', window['__postUpdateTimesHandler']);
-      })();
-    </script>
-
-    <footer>
-      <a href="/blog">← 返回文章列表</a>
+    <footer class="post-footer">
+      <a href="/blog">
+        <ArrowLeft size={16} stroke-width={1.8} aria-hidden="true" />
+        返回文章列表
+      </a>
     </footer>
 
-    <section class="comments">
-      <h2>评论</h2>
+    <section class="comments" aria-labelledby="comments-title">
+      <div class="comments-heading">
+        <p class="eyebrow">DISCUSSION</p>
+        <h2 id="comments-title">评论</h2>
+      </div>
       <div class="giscus"></div>
-      <script is:inline>
-        (function() {
-          function getGiscusTheme() {
-            const theme = document.documentElement.getAttribute('data-theme') || 
-              (localStorage.getItem('theme')) ||
-              (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            return theme === 'dark' ? 'dark' : 'light';
-          }
-
-          function loadGiscus() {
-            const container = document.querySelector('.giscus');
-            if (!container) return;
-            
-            // 清空容器
-            container.innerHTML = '';
-            
-            const script = document.createElement('script');
-            script.src = 'https://giscus.app/client.js';
-            script.setAttribute('data-repo', 'fine405/blog');
-            script.setAttribute('data-repo-id', 'R_kgDOQhlUWQ');
-            script.setAttribute('data-category', 'General');
-            script.setAttribute('data-category-id', 'DIC_kwDOQhlUWc4CzVPI');
-            script.setAttribute('data-mapping', 'pathname');
-            script.setAttribute('data-strict', '0');
-            script.setAttribute('data-reactions-enabled', '1');
-            script.setAttribute('data-emit-metadata', '0');
-            script.setAttribute('data-input-position', 'top');
-            script.setAttribute('data-theme', getGiscusTheme());
-            script.setAttribute('data-lang', 'zh-CN');
-            script.setAttribute('crossorigin', 'anonymous');
-            script.async = true;
-            container.appendChild(script);
-          }
-
-          function setGiscusTheme(theme) {
-            const iframe = document.querySelector('iframe.giscus-frame');
-            if (iframe) {
-              iframe.contentWindow.postMessage(
-                { giscus: { setConfig: { theme: theme } } },
-                'https://giscus.app'
-              );
-            }
-          }
-
-          function handlePageLoad() {
-            loadGiscus();
-          }
-
-          // 替换旧的 page-load 监听器，避免重复执行
-          if (window['__giscusPageLoadHandler']) {
-            document.removeEventListener('astro:page-load', window['__giscusPageLoadHandler']);
-          }
-          window['__giscusPageLoadHandler'] = handlePageLoad;
-          document.addEventListener('astro:page-load', window['__giscusPageLoadHandler']);
-
-          // 监听主题切换（先断开旧 observer，避免泄漏）
-          if (window['__giscusThemeObserver']) {
-            window['__giscusThemeObserver'].disconnect();
-          }
-          const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              if (mutation.attributeName === 'data-theme') {
-                setGiscusTheme(getGiscusTheme());
-              }
-            });
-          });
-          observer.observe(document.documentElement, { attributes: true });
-          window['__giscusThemeObserver'] = observer;
-
-          // 初始加载
-          loadGiscus();
-        })();
-      </script>
     </section>
   </article>
+
+  <script is:inline>
+    (function() {
+      function formatRelativeTime(date) {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return '刚刚';
+        if (minutes < 60) return minutes + ' 分钟前';
+        if (hours < 24) return hours + ' 小时前';
+        if (days < 30) return days + ' 天前';
+        if (days < 365) return Math.floor(days / 30) + ' 个月前';
+        return Math.floor(days / 365) + ' 年前';
+      }
+
+      function formatLocalTime(date) {
+        return date.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+      }
+
+      function updateTimes() {
+        var timeEl = document.querySelector('.publish-time');
+        if (timeEl) {
+          var dateStr = timeEl.getAttribute('datetime');
+          var localTimeEl = timeEl.querySelector('.local-time');
+          if (dateStr && localTimeEl) localTimeEl.textContent = formatLocalTime(new Date(dateStr));
+        }
+
+        var updatedEl = document.querySelector('.updated[data-updated]');
+        if (updatedEl) {
+          var updateDateStr = updatedEl.getAttribute('data-updated');
+          if (updateDateStr) {
+            var updateDate = new Date(updateDateStr);
+            updatedEl.setAttribute('title', '更新于 ' + formatLocalTime(updateDate));
+            var relativeTimeEl = updatedEl.querySelector('.relative-time');
+            if (relativeTimeEl) relativeTimeEl.textContent = formatRelativeTime(updateDate);
+          }
+        }
+      }
+
+      function setupReadingProgress() {
+        const content = document.getElementById('article-content');
+        const progress = document.getElementById('reading-progress-bar');
+        if (!content || !progress) return;
+
+        if (window['__articleProgressHandler']) {
+          window.removeEventListener('scroll', window['__articleProgressHandler']);
+          window.removeEventListener('resize', window['__articleProgressHandler']);
+        }
+
+        const updateProgress = () => {
+          const start = content.getBoundingClientRect().top + window.scrollY;
+          const end = start + content.offsetHeight - window.innerHeight;
+          const percent = end <= start ? 1 : Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
+          progress.style.transform = 'scaleX(' + percent + ')';
+        };
+
+        window['__articleProgressHandler'] = updateProgress;
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        window.addEventListener('resize', updateProgress, { passive: true });
+        updateProgress();
+      }
+
+      function setupCodeBlocks() {
+        document.querySelectorAll('.content pre').forEach((pre) => {
+          if (pre.dataset.enhanced === 'true') return;
+          pre.dataset.enhanced = 'true';
+          pre.classList.add('code-frame');
+
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'copy-code-button';
+          button.textContent = '复制';
+          button.setAttribute('aria-label', '复制代码');
+          button.addEventListener('click', async () => {
+            const code = pre.querySelector('code');
+            if (!code) return;
+
+            button.textContent = '已复制';
+            button.classList.add('copied');
+            window.setTimeout(() => {
+              button.textContent = '复制';
+              button.classList.remove('copied');
+            }, 1600);
+
+            try {
+              await navigator.clipboard.writeText(code.textContent || '');
+            } catch {
+              button.textContent = '复制失败';
+              button.classList.remove('copied');
+            }
+          });
+          pre.appendChild(button);
+        });
+      }
+
+      function initArticle() {
+        updateTimes();
+        setupReadingProgress();
+        setupCodeBlocks();
+      }
+
+      initArticle();
+      if (window['__postArticleInitHandler']) {
+        document.removeEventListener('astro:page-load', window['__postArticleInitHandler']);
+      }
+      window['__postArticleInitHandler'] = initArticle;
+      document.addEventListener('astro:page-load', window['__postArticleInitHandler']);
+    })();
+  </script>
+
+  <script is:inline>
+    (function() {
+      function getGiscusTheme() {
+        const theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme');
+        return theme === 'dark' ? 'dark' : 'light';
+      }
+
+      function loadGiscus() {
+        const container = document.querySelector('.giscus');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.setAttribute('data-repo', 'fine405/blog');
+        script.setAttribute('data-repo-id', 'R_kgDOQhlUWQ');
+        script.setAttribute('data-category', 'General');
+        script.setAttribute('data-category-id', 'DIC_kwDOQhlUWc4CzVPI');
+        script.setAttribute('data-mapping', 'pathname');
+        script.setAttribute('data-strict', '0');
+        script.setAttribute('data-reactions-enabled', '1');
+        script.setAttribute('data-emit-metadata', '0');
+        script.setAttribute('data-input-position', 'top');
+        script.setAttribute('data-theme', getGiscusTheme());
+        script.setAttribute('data-lang', 'zh-CN');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+        container.appendChild(script);
+      }
+
+      function setGiscusTheme(theme) {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            { giscus: { setConfig: { theme: theme } } },
+            'https://giscus.app'
+          );
+        }
+      }
+
+      if (window['__giscusPageLoadHandler']) {
+        document.removeEventListener('astro:page-load', window['__giscusPageLoadHandler']);
+      }
+      window['__giscusPageLoadHandler'] = loadGiscus;
+      document.addEventListener('astro:page-load', window['__giscusPageLoadHandler']);
+
+      if (window['__giscusThemeObserver']) window['__giscusThemeObserver'].disconnect();
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'data-theme') setGiscusTheme(getGiscusTheme());
+        });
+      });
+      observer.observe(document.documentElement, { attributes: true });
+      window['__giscusThemeObserver'] = observer;
+      loadGiscus();
+    })();
+  </script>
 </BaseLayout>
 
 <style>
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 200;
+    height: 3px;
+    pointer-events: none;
+  }
+
+  .reading-progress span {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  .post {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .back-link,
+  .post-footer a {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 180ms ease, transform 180ms var(--ease-out);
+  }
+
+  .back-link:hover,
+  .post-footer a:hover {
+    color: var(--text-primary);
+    transform: translateX(-3px);
+  }
+
+  .post-header {
+    max-width: 900px;
+    margin-top: 3.5rem;
+    padding-bottom: 3.25rem;
+  }
+
+  .eyebrow {
+    color: var(--accent-strong);
+    font-size: 0.69rem;
+    font-weight: 720;
+    letter-spacing: 0.18em;
+  }
+
+  .post-header h1 {
+    margin-top: 1.05rem;
+    color: var(--text-primary);
+    font-size: clamp(2.65rem, 5.2vw, 4.75rem);
+    font-weight: 710;
+    letter-spacing: -0.06em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .post-description {
+    max-width: 760px;
+    margin-top: 1.35rem;
+    color: var(--text-secondary);
+    font-size: 1.02rem;
+    line-height: 1.8;
+  }
+
+  .meta {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem 1rem;
+    color: var(--text-tertiary);
+    font-size: 0.76rem;
+  }
+
+  .meta > * {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+  }
+
+  .updated {
+    padding: 0.28rem 0.52rem;
+    border-radius: 7px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    cursor: help;
+    font-weight: 620;
+  }
+
+  .tags {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.38rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 590;
+    text-decoration: none;
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease,
+      transform 180ms var(--ease-out);
+  }
+
+  .tag:hover {
+    border-color: transparent;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+
   .cover {
-    margin: 0 0 2rem;
+    margin: 0 0 4rem;
   }
 
   .cover img {
     width: 100%;
-    max-height: 400px;
+    max-height: 560px;
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     object-fit: cover;
-    border-radius: 12px;
   }
 
   .cover figcaption {
-    margin-top: 0.75rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    margin-top: 0.85rem;
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    line-height: 1.5;
     text-align: center;
-    font-style: italic;
-  }
-
-  .post header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .post h1 {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    line-height: 1.3;
-  }
-
-  .meta {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .time-info {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .time-info .updated {
-    color: var(--accent);
-    cursor: help;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-
-  .tag {
-    background: var(--bg-secondary);
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    text-decoration: none;
-    color: var(--text-secondary);
-    transition: background 0.2s;
-  }
-
-  .tag:hover {
-    background: var(--border);
-    color: var(--accent);
   }
 
   .content {
-    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--text);
+    font-size: clamp(1rem, 1.25vw, 1.06rem);
+    line-height: 1.95;
+    overflow-wrap: anywhere;
+  }
+
+  .content :global(h2),
+  .content :global(h3),
+  .content :global(h4) {
+    color: var(--text-primary);
+    font-weight: 680;
+    letter-spacing: -0.035em;
+    line-height: 1.4;
+    scroll-margin-top: 8rem;
   }
 
   .content :global(h2) {
-    font-size: 1.5rem;
-    margin: 2rem 0 1rem;
+    margin: 3.6rem 0 1.15rem;
+    padding-top: 0.4rem;
+    font-size: clamp(1.65rem, 3vw, 2.2rem);
   }
 
   .content :global(h3) {
-    font-size: 1.25rem;
-    margin: 1.5rem 0 0.75rem;
+    margin: 2.7rem 0 0.9rem;
+    font-size: clamp(1.28rem, 2.3vw, 1.58rem);
+  }
+
+  .content :global(h4) {
+    margin: 2rem 0 0.75rem;
+    font-size: 1.08rem;
   }
 
   .content :global(p) {
-    margin-bottom: 1rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .content :global(strong) {
+    color: var(--text-primary);
+    font-weight: 680;
+  }
+
+  .content :global(a) {
+    color: var(--accent-strong);
+    text-decoration-color: rgba(63, 91, 216, 0.35);
+    text-decoration-thickness: 1px;
+    transition: color 180ms ease, text-decoration-color 180ms ease;
+  }
+
+  .content :global(a:hover) {
+    color: var(--accent);
+    text-decoration-color: currentColor;
   }
 
   .content :global(ul),
   .content :global(ol) {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
+    margin: 1.25rem 0 1.5rem;
+    padding-left: 1.45rem;
   }
 
   .content :global(li) {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.62rem;
+    padding-left: 0.25rem;
+  }
+
+  .content :global(li::marker) {
+    color: var(--accent);
+    font-weight: 650;
   }
 
   .content :global(blockquote) {
+    position: relative;
+    margin: 2rem 0;
+    padding: 1.25rem 1.4rem 1.25rem 1.6rem;
+    border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
-    padding-left: 1rem;
-    margin: 1.5rem 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    background: var(--surface-soft);
     color: var(--text-secondary);
+  }
+
+  .content :global(blockquote p:last-child) {
+    margin-bottom: 0;
   }
 
   .content :global(img) {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
-    margin: 1.5rem 0;
+    margin: 2.25rem auto;
     display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms ease;
+  }
+
+  .content :global(img:hover) {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
 
   .content :global(table) {
     width: 100%;
-    border-collapse: collapse;
-    margin: 1.5rem 0;
-    font-size: 0.9rem;
+    margin: 2rem 0;
+    display: block;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
   }
 
   .content :global(th),
   .content :global(td) {
-    border: 1px solid var(--border);
-    padding: 0.75rem 1rem;
+    min-width: 130px;
+    padding: 0.85rem 1rem;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     text-align: left;
+    vertical-align: top;
   }
 
   .content :global(th) {
     background: var(--bg-secondary);
-    font-weight: 600;
+    color: var(--text-primary);
+    font-weight: 650;
+  }
+
+  .content :global(tr:last-child td) {
+    border-bottom: 0;
+  }
+
+  .content :global(th:last-child),
+  .content :global(td:last-child) {
+    border-right: 0;
+  }
+
+  .content :global(tr) {
+    transition: background-color 160ms ease;
   }
 
   .content :global(tr:hover) {
-    background: var(--bg-secondary);
+    background: var(--surface-soft);
   }
 
-  .post footer {
-    margin-top: 3rem;
+  .content :global(hr) {
+    height: 1px;
+    margin: 3rem 0;
+    border: 0;
+    background: var(--border);
+  }
+
+  .content :global(pre) {
+    position: relative;
+    margin: 1.8rem 0;
+    padding: 1.35rem;
+    padding-top: 3.1rem;
+    line-height: 1.7;
+  }
+
+  .content :global(.copy-code-button) {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    min-width: 54px;
+    height: 30px;
+    padding: 0 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-solid);
+    color: var(--text-secondary);
+    font-size: 0.69rem;
+    font-weight: 620;
+    cursor: pointer;
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .content :global(.copy-code-button:hover),
+  .content :global(.copy-code-button.copied) {
+    border-color: transparent;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .post-footer {
+    max-width: 800px;
+    margin: 4.5rem auto 0;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
   }
 
   .comments {
-    margin-top: 3rem;
-    padding-top: 2rem;
+    max-width: 800px;
+    margin: 5rem auto 0;
+    padding-top: 3rem;
     border-top: 1px solid var(--border);
   }
 
+  .comments-heading {
+    margin-bottom: 2rem;
+  }
+
   .comments h2 {
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
+    margin-top: 0.45rem;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 680;
+    letter-spacing: -0.04em;
+  }
+
+  @media (max-width: 640px) {
+    .post-header {
+      margin-top: 2.5rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .post-header h1 {
+      font-size: clamp(2.4rem, 12vw, 3.6rem);
+      line-height: 1.18;
+    }
+
+    .post-description {
+      font-size: 0.95rem;
+    }
+
+    .meta {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .cover {
+      margin-bottom: 3rem;
+    }
+
+    .cover img {
+      border-radius: var(--radius-md);
+    }
+
+    .content {
+      font-size: 1rem;
+      line-height: 1.9;
+    }
+
+    .content :global(h2) {
+      margin-top: 3rem;
+    }
+
+    .content :global(pre) {
+      margin-right: -0.2rem;
+      margin-left: -0.2rem;
+      border-radius: 13px;
+      font-size: 0.82rem;
+    }
+  }
+
+  @media print {
+    .reading-progress,
+    .back-link,
+    .post-footer,
+    .comments,
+    .content :global(.copy-code-button) {
+      display: none !important;
+    }
+
+    .post,
+    .content {
+      max-width: none;
+    }
   }
 </style>

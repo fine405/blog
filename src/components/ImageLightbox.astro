@@ -6,6 +6,13 @@
   import GLightbox from 'glightbox';
   import 'glightbox/dist/css/glightbox.min.css';
 
+  interface LightboxWindow extends Window {
+    __glightboxInstance?: ReturnType<typeof GLightbox>;
+    __imageLightboxPageLoadHandler?: () => void;
+  }
+
+  const lightboxWindow = window as LightboxWindow;
+
   function initLightbox() {
     // 获取文章内容区域的所有图片
     const contentImages = document.querySelectorAll<HTMLImageElement>('.content img');
@@ -17,14 +24,14 @@
       img.style.cursor = 'zoom-in';
     });
 
-    const existing = window['__glightboxInstance'];
+    const existing = lightboxWindow.__glightboxInstance;
     if (existing && typeof existing.destroy === 'function') {
       existing.destroy();
     }
 
     // 初始化 GLightbox
     if (contentImages.length > 0) {
-      window['__glightboxInstance'] = GLightbox({
+      lightboxWindow.__glightboxInstance = GLightbox({
         selector: '.glightbox',
         touchNavigation: true,
         loop: true,
@@ -39,22 +46,23 @@
       return;
     }
 
-    window['__glightboxInstance'] = undefined;
+    lightboxWindow.__glightboxInstance = undefined;
   }
 
   initLightbox();
 
-  if (window['__imageLightboxPageLoadHandler']) {
-    document.removeEventListener('astro:page-load', window['__imageLightboxPageLoadHandler']);
+  if (lightboxWindow.__imageLightboxPageLoadHandler) {
+    document.removeEventListener('astro:page-load', lightboxWindow.__imageLightboxPageLoadHandler);
   }
-  window['__imageLightboxPageLoadHandler'] = initLightbox;
-  document.addEventListener('astro:page-load', window['__imageLightboxPageLoadHandler']);
+  lightboxWindow.__imageLightboxPageLoadHandler = initLightbox;
+  document.addEventListener('astro:page-load', lightboxWindow.__imageLightboxPageLoadHandler);
 </script>
 
 <style is:global>
-  /* 自定义 GLightbox 样式 */
   .goverlay {
-    background: rgba(0, 0, 0, 0.92) !important;
+    background: rgba(9, 12, 18, 0.9) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(0.8);
+    backdrop-filter: blur(16px) saturate(0.8);
   }
 
   .gslide-description {
@@ -62,28 +70,32 @@
   }
 
   .gdesc-inner {
-    padding: 1rem !important;
-    color: #fff !important;
+    padding: 1rem 1.25rem !important;
+    color: rgba(255, 255, 255, 0.86) !important;
   }
 
   .gclose, .gnext, .gprev {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-radius: 50% !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
     width: 44px !important;
     height: 44px !important;
+    transition: background-color 180ms ease, transform 180ms ease !important;
   }
 
   .gclose:hover, .gnext:hover, .gprev:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    transform: translateY(-2px) !important;
   }
 
   .gslide-image img {
     max-height: 90vh !important;
+    border-radius: 14px !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42) !important;
   }
 
-  /* 图片计数器 */
   .gslide-title {
-    font-size: 0.9rem !important;
+    font-size: 0.82rem !important;
     color: rgba(255, 255, 255, 0.7) !important;
   }
 </style>
