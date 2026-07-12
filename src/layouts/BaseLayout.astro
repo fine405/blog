@@ -398,6 +398,18 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
     --accent-strong: #2f5fcf;
     --accent-soft: rgba(75, 118, 230, 0.13);
     --accent-faint: rgba(80, 122, 235, 0.12);
+    --nav-fill: rgba(255, 248, 242, 0.56);
+    --nav-fill-strong: rgba(255, 250, 246, 0.76);
+    --nav-stroke: rgba(255, 255, 255, 0.64);
+    --nav-stroke-strong: rgba(190, 105, 70, 0.22);
+    --nav-accent: #bc4a2b;
+    --nav-accent-strong: #92351f;
+    --nav-accent-soft: rgba(211, 85, 48, 0.15);
+    --nav-tab-hover: rgba(174, 77, 46, 0.055);
+    --nav-tab-active: rgba(181, 73, 42, 0.105);
+    --nav-tab-active-border: rgba(156, 67, 40, 0.12);
+    --nav-shadow: 0 18px 48px rgba(112, 59, 38, 0.1), 0 3px 12px rgba(112, 59, 38, 0.055);
+    --nav-shadow-scrolled: 0 22px 58px rgba(103, 53, 34, 0.14), 0 5px 16px rgba(103, 53, 34, 0.07);
     --border: rgba(71, 93, 132, 0.13);
     --border-strong: rgba(65, 88, 131, 0.22);
     --glass-fill: rgba(255, 255, 255, 0.68);
@@ -435,6 +447,18 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
     --accent-strong: #b0c3ff;
     --accent-soft: rgba(115, 151, 255, 0.17);
     --accent-faint: rgba(91, 132, 245, 0.14);
+    --nav-fill: rgba(35, 24, 22, 0.54);
+    --nav-fill-strong: rgba(40, 27, 25, 0.74);
+    --nav-stroke: rgba(255, 221, 207, 0.13);
+    --nav-stroke-strong: rgba(255, 151, 111, 0.22);
+    --nav-accent: #f58b62;
+    --nav-accent-strong: #ffc1a5;
+    --nav-accent-soft: rgba(232, 102, 61, 0.18);
+    --nav-tab-hover: rgba(245, 139, 98, 0.065);
+    --nav-tab-active: rgba(245, 139, 98, 0.13);
+    --nav-tab-active-border: rgba(255, 165, 127, 0.16);
+    --nav-shadow: 0 22px 56px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.18);
+    --nav-shadow-scrolled: 0 26px 68px rgba(0, 0, 0, 0.38), 0 6px 18px rgba(0, 0, 0, 0.22);
     --border: rgba(222, 233, 255, 0.11);
     --border-strong: rgba(222, 233, 255, 0.2);
     --glass-fill: rgba(27, 21, 22, 0.46);
@@ -608,13 +632,21 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   }
 
   .site-nav {
-    min-height: 68px;
-    padding: 0.55rem 0.65rem 0.55rem 1.25rem;
+    min-height: 64px;
+    padding: 0.48rem 0.55rem 0.48rem 1.15rem;
     display: grid;
     grid-template-columns: minmax(190px, 1fr) auto minmax(190px, 1fr);
     align-items: center;
-    border: 1px solid var(--glass-stroke-muted);
-    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--nav-stroke);
+    border-radius: 20px;
+    background: var(--nav-fill);
+    box-shadow:
+      var(--nav-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(162, 82, 49, 0.06);
+    -webkit-backdrop-filter: blur(28px) saturate(1.2);
+    backdrop-filter: blur(28px) saturate(1.2);
     transition:
       background-color 220ms ease,
       border-color 220ms ease,
@@ -623,25 +655,51 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   }
 
   .site-header.scrolled .site-nav {
-    border-color: var(--glass-stroke);
-    background: var(--glass-fill-strong);
+    border-color: var(--nav-stroke-strong);
+    background: var(--nav-fill-strong);
     box-shadow:
-      var(--glass-shadow-hover),
-      inset 0 1px 0 var(--glass-highlight),
-      inset 1px 0 0 rgba(255, 255, 255, 0.2);
+      var(--nav-shadow-scrolled),
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      inset 0 -1px 0 rgba(162, 82, 49, 0.08);
     transform: translateY(-2px);
   }
 
   [data-theme='dark'] .site-nav {
     box-shadow:
-      var(--glass-shadow),
-      inset 0 1px 0 var(--glass-highlight),
+      var(--nav-shadow),
+      inset 0 1px 0 rgba(255, 218, 201, 0.1),
       inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  }
+
+  [data-theme='dark'] .site-header.scrolled .site-nav {
+    box-shadow:
+      var(--nav-shadow-scrolled),
+      inset 0 1px 0 rgba(255, 218, 201, 0.12),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+  }
+
+  .site-nav::after {
+    background:
+      radial-gradient(circle at var(--glass-x) var(--glass-y), rgba(255, 255, 255, 0.7), transparent 29%),
+      linear-gradient(128deg, rgba(255, 244, 236, 0.26), transparent 38% 68%, rgba(220, 103, 61, 0.1));
+    opacity: 0.72;
+  }
+
+  [data-theme='dark'] .site-nav::after {
+    background:
+      radial-gradient(circle at var(--glass-x) var(--glass-y), rgba(255, 224, 210, 0.14), transparent 30%),
+      linear-gradient(128deg, rgba(255, 208, 187, 0.07), transparent 40% 70%, rgba(224, 94, 53, 0.09));
+    opacity: 0.62;
   }
 
   .site-nav > * {
     position: relative;
     z-index: 3;
+  }
+
+  .site-nav a:focus-visible,
+  .site-nav button:focus-visible {
+    outline-color: color-mix(in srgb, var(--nav-accent) 48%, transparent);
   }
 
   .brand {
@@ -664,9 +722,13 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
     color: var(--accent);
   }
 
+  .site-nav .brand-name span {
+    color: var(--nav-accent);
+  }
+
   .brand-note {
     margin-top: 0.35rem;
-    color: var(--text-tertiary);
+    color: color-mix(in srgb, var(--text-tertiary) 82%, var(--nav-accent));
     font-size: 0.61rem;
     font-weight: 620;
     letter-spacing: 0.13em;
@@ -682,13 +744,13 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
 
   .nav-tab-indicator {
     position: absolute;
-    inset: 0 auto 0 0;
+    inset: 3px auto 3px 0;
     z-index: 0;
     width: calc((100% - 0.45rem) / 4);
-    border: 1px solid rgba(93, 129, 231, 0.18);
-    border-radius: 12px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.48), var(--accent-soft));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56), 0 5px 16px rgba(68, 97, 171, 0.08);
+    border: 1px solid var(--nav-tab-active-border);
+    border-radius: 11px;
+    background: var(--nav-tab-active);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
     pointer-events: none;
     transition: transform 360ms var(--ease-out);
   }
@@ -706,8 +768,7 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   }
 
   [data-theme='dark'] .nav-tab-indicator {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), var(--accent-soft));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 5px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 231, 220, 0.08);
   }
 
   .nav-links > a {
@@ -724,18 +785,19 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   }
 
   .nav-links > a:not(.active):hover {
-    border-color: var(--glass-stroke-muted);
-    background: rgba(255, 255, 255, 0.34);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
-    color: var(--text-primary);
+    border-color: transparent;
+    background: var(--nav-tab-hover);
+    box-shadow: none;
+    color: color-mix(in srgb, var(--text-secondary) 84%, var(--nav-accent));
   }
 
   [data-theme='dark'] .nav-links > a:not(.active):hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--nav-tab-hover);
   }
 
   .nav-links > a.active {
-    color: var(--accent-strong);
+    color: color-mix(in srgb, var(--text-secondary) 68%, var(--nav-accent));
+    font-weight: 600;
   }
 
   .nav-actions {
@@ -765,15 +827,15 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   }
 
   .icon-button:hover {
-    border-color: var(--glass-stroke-muted);
-    background: rgba(255, 255, 255, 0.38);
+    border-color: color-mix(in srgb, var(--nav-accent) 15%, var(--nav-stroke));
+    background: color-mix(in srgb, var(--nav-accent-soft) 38%, rgba(255, 255, 255, 0.38));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
     color: var(--text-primary);
     transform: translateY(-1px);
   }
 
   [data-theme='dark'] .icon-button:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--nav-accent-soft) 42%, rgba(255, 255, 255, 0.05));
   }
 
   .icon-button:active {
@@ -975,12 +1037,12 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
       padding: 0.75rem;
       display: grid;
       gap: 0.3rem;
-      border: 1px solid var(--glass-stroke-muted);
+      border: 1px solid var(--nav-stroke-strong);
       border-radius: 22px;
-      background: rgba(249, 251, 255, 0.88);
+      background: var(--nav-fill-strong);
       box-shadow:
-        var(--glass-shadow),
-        inset 0 1px 0 var(--glass-highlight);
+        var(--nav-shadow-scrolled),
+        inset 0 1px 0 rgba(255, 255, 255, 0.68);
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px) scale(0.98);
@@ -993,23 +1055,18 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
       backdrop-filter: blur(28px) saturate(1.35);
     }
 
-    [data-theme='dark'] .nav-links {
-      background: rgba(13, 22, 38, 0.9);
-    }
-
     .nav-tab-indicator {
       display: none;
     }
 
     .nav-links > a.active {
-      border-color: rgba(93, 129, 231, 0.18);
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.48), var(--accent-soft));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56), 0 5px 16px rgba(68, 97, 171, 0.08);
+      border-color: var(--nav-tab-active-border);
+      background: var(--nav-tab-active);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
     }
 
     [data-theme='dark'] .nav-links > a.active {
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), var(--accent-soft));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 5px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 231, 220, 0.08);
     }
 
     .nav-links.open {
