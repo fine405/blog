@@ -803,8 +803,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     width: 100%;
     height: 100%;
     display: block;
-    background: linear-gradient(90deg, #6fa9ff, var(--accent), #9d7cff);
-    box-shadow: 0 0 16px rgba(91, 133, 242, 0.5);
+    background: var(--progress-gradient);
+    box-shadow: 0 0 16px var(--progress-glow);
     transform: scaleX(0);
     transform-origin: left center;
     will-change: transform;
@@ -1003,7 +1003,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     height: 100%;
     display: block;
     border-radius: inherit;
-    background: linear-gradient(90deg, #6fa9ff, var(--accent), #9d7cff);
+    background: var(--progress-gradient);
     box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
     transform: scaleX(0);
     transform-origin: left center;
@@ -1163,7 +1163,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     border: 1px solid var(--glass-stroke-muted);
     border-radius: var(--radius-xl);
     background: var(--reading-surface);
-    box-shadow: 0 22px 64px rgba(44, 63, 101, 0.1), inset 0 1px 0 var(--glass-highlight);
+    box-shadow: 0 22px 64px rgba(98, 55, 40, 0.1), inset 0 1px 0 var(--glass-highlight);
     color: var(--text);
     font-size: clamp(1rem, 1.25vw, 1.06rem);
     line-height: 1.95;
@@ -1211,7 +1211,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   .content :global(a) {
     color: var(--accent-strong);
-    text-decoration-color: rgba(63, 91, 216, 0.35);
+    text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
     text-decoration-thickness: 1px;
     transition: color 180ms ease, text-decoration-color 180ms ease;
   }
