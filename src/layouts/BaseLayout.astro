@@ -25,6 +25,7 @@ interface Props {
   tags?: string[];
   canonicalURL?: string;
   noindex?: boolean;
+  backgroundMotion?: boolean;
 }
 
 const {
@@ -40,6 +41,7 @@ const {
   tags = [],
   canonicalURL,
   noindex = false,
+  backgroundMotion = true,
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -94,7 +96,7 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   <body>
     <a class="skip-link" href="#main-content">跳到主要内容</a>
 
-    <FlowFieldBackground />
+    <FlowFieldBackground animated={backgroundMotion} />
 
     <div class="site-shell">
       <header class="site-header">

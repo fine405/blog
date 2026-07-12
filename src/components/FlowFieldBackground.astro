@@ -1,5 +1,13 @@
-<div class="flow-field-background" aria-hidden="true">
-  <canvas class="flow-field-canvas"></canvas>
+---
+interface Props {
+  animated?: boolean;
+}
+
+const { animated = true } = Astro.props;
+---
+
+<div class="flow-field-background" data-flow-motion={animated ? 'animated' : 'static'} aria-hidden="true">
+  <canvas class="flow-field-canvas" data-flow-motion={animated ? 'animated' : 'static'}></canvas>
 </div>
 
 <script is:inline>
@@ -19,6 +27,7 @@
 
       uniform vec2 u_resolution;
       uniform vec2 u_pointer;
+      uniform vec2 u_pointer_head;
       uniform vec2 u_velocity;
       uniform float u_cell_size;
       uniform float u_pointer_strength;
@@ -65,11 +74,30 @@
         float slowTime = u_time * 0.045;
         vec2 point = (v_uv - 0.5) * vec2(aspect, 1.0);
 
-        vec2 pointerPoint = (u_pointer - 0.5) * vec2(aspect, 1.0);
-        vec2 pointerDelta = point - pointerPoint;
-        float pointerDistance = length(pointerDelta);
-        vec2 pointerDirection = pointerDelta / max(pointerDistance, 0.0001);
-        float pointerInfluence = exp(-pointerDistance * pointerDistance * 33.0) * u_pointer_strength;
+        vec2 pointerTail = (u_pointer - 0.5) * vec2(aspect, 1.0);
+        vec2 pointerHead = (u_pointer_head - 0.5) * vec2(aspect, 1.0);
+        vec2 headDelta = point - pointerHead;
+        float headDistance = length(headDelta);
+        float headInfluence = exp(-headDistance * headDistance * 33.0);
+
+        vec2 trailVector = pointerHead - pointerTail;
+        float trailLengthSquared = dot(trailVector, trailVector);
+        float trailPosition = clamp(
+          dot(point - pointerTail, trailVector) / max(trailLengthSquared, 0.0001),
+          0.0,
+          1.0
+        );
+        vec2 trailClosestPoint = pointerTail + trailVector * trailPosition;
+        vec2 trailDelta = point - trailClosestPoint;
+        float trailDistance = length(trailDelta);
+        float trailStrength = smoothstep(0.003, 0.09, sqrt(trailLengthSquared));
+        float trailInfluence = exp(-trailDistance * trailDistance * 58.0) * trailStrength * 0.86;
+
+        vec2 headDirection = headDelta / max(headDistance, 0.0001);
+        vec2 trailDirection = trailDelta / max(trailDistance, 0.0001);
+        vec2 directionBlend = headDirection * headInfluence + trailDirection * trailInfluence;
+        vec2 pointerDirection = directionBlend / max(length(directionBlend), 0.0001);
+        float pointerInfluence = max(headInfluence, trailInfluence) * u_pointer_strength;
         vec2 velocity = u_velocity * vec2(aspect, 1.0);
         float velocityStrength = min(length(velocity) * 36.0, 1.0);
         vec2 tangent = vec2(-pointerDirection.y, pointerDirection.x);
@@ -212,6 +240,7 @@
       const uniforms = {
         resolution: gl.getUniformLocation(program, 'u_resolution'),
         pointer: gl.getUniformLocation(program, 'u_pointer'),
+        pointerHead: gl.getUniformLocation(program, 'u_pointer_head'),
         velocity: gl.getUniformLocation(program, 'u_velocity'),
         cellSize: gl.getUniformLocation(program, 'u_cell_size'),
         pointerStrength: gl.getUniformLocation(program, 'u_pointer_strength'),
@@ -222,6 +251,8 @@
       if (!buffer || positionLocation < 0) return;
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const backgroundIsAnimated = canvas.dataset.flowMotion === 'animated';
+      const shouldAnimate = backgroundIsAnimated && !reduceMotion;
       const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
       const compactViewport = window.matchMedia('(max-width: 640px)').matches;
       const targetFrameDuration = 1000 / (compactViewport ? 22 : 30);
@@ -267,13 +298,13 @@
 
       function render(timestamp) {
         if (destroyed) return;
-        animationFrame = window.requestAnimationFrame(render);
-        if (!reduceMotion && timestamp - lastRender < targetFrameDuration) return;
+        animationFrame = shouldAnimate ? window.requestAnimationFrame(render) : 0;
+        if (shouldAnimate && timestamp - lastRender < targetFrameDuration) return;
         lastRender = timestamp;
 
         const previousX = pointer.currentX;
         const previousY = pointer.currentY;
-        const follow = reduceMotion ? 1 : 0.095;
+        const follow = shouldAnimate ? 0.075 : 1;
         pointer.currentX += (pointer.targetX - pointer.currentX) * follow;
         pointer.currentY += (pointer.targetY - pointer.currentY) * follow;
         velocityX += ((pointer.currentX - previousX) - velocityX) * 0.18;
@@ -284,21 +315,17 @@
         gl.useProgram(program);
         gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
         gl.uniform2f(uniforms.pointer, pointer.currentX, pointer.currentY);
+        gl.uniform2f(uniforms.pointerHead, pointer.targetX, pointer.targetY);
         gl.uniform2f(uniforms.velocity, velocityX, velocityY);
         gl.uniform1f(uniforms.cellSize, cellSize);
-        gl.uniform1f(uniforms.pointerStrength, reduceMotion ? 0 : pointerStrength);
+        gl.uniform1f(uniforms.pointerStrength, shouldAnimate ? pointerStrength : 0);
         gl.uniform1f(uniforms.theme, themeValue);
-        gl.uniform1f(uniforms.time, reduceMotion ? 0 : timestamp / 1000);
+        gl.uniform1f(uniforms.time, shouldAnimate ? timestamp / 1000 : 0);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-        if (reduceMotion) {
-          window.cancelAnimationFrame(animationFrame);
-          animationFrame = 0;
-        }
       }
 
       function handlePointerMove(event) {
-        if (!finePointer || reduceMotion) return;
+        if (!finePointer || !shouldAnimate) return;
         pointer.targetX = Math.max(0, Math.min(1, event.clientX / window.innerWidth));
         pointer.targetY = 1 - Math.max(0, Math.min(1, event.clientY / window.innerHeight));
         targetPointerStrength = 1;
@@ -309,6 +336,7 @@
       }
 
       function handleVisibilityChange() {
+        if (!shouldAnimate) return;
         if (document.hidden) {
           window.cancelAnimationFrame(animationFrame);
           animationFrame = 0;
@@ -319,7 +347,7 @@
 
       const themeObserver = new MutationObserver(() => {
         targetTheme = document.documentElement.dataset.theme === 'dark' ? 1 : 0;
-        if (reduceMotion) {
+        if (!shouldAnimate) {
           themeValue = targetTheme;
           if (!animationFrame) animationFrame = window.requestAnimationFrame(render);
         }
