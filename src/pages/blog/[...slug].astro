@@ -304,6 +304,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         let activeId = '';
         let frame = 0;
+        let navigationTargetId = '';
+        let navigationReleaseTimer = 0;
 
         window['__articleTocController'] = controller;
 
@@ -332,12 +334,12 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
           if (!nav || nav.scrollHeight <= nav.clientHeight) return;
           const navRect = nav.getBoundingClientRect();
           const linkRect = link.getBoundingClientRect();
-          const delta = linkRect.top - navRect.top - (navRect.height - linkRect.height) / 2;
-          if (Math.abs(delta) < 12) return;
-          nav.scrollTo({
-            top: nav.scrollTop + delta,
-            behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
-          });
+          const edgePadding = 8;
+          if (linkRect.top < navRect.top + edgePadding) {
+            nav.scrollTop -= navRect.top + edgePadding - linkRect.top;
+          } else if (linkRect.bottom > navRect.bottom - edgePadding) {
+            nav.scrollTop += linkRect.bottom - (navRect.bottom - edgePadding);
+          }
         };
 
         const setActive = (id) => {
@@ -374,6 +376,11 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
           if (progressFill) progressFill.style.transform = 'scaleX(' + progress + ')';
           progressLabels.forEach((label) => { label.textContent = progressText; });
 
+          if (navigationTargetId) {
+            setActive(navigationTargetId);
+            return;
+          }
+
           const activationLine = Math.min(window.innerHeight * 0.28, 220);
           let current = sections[0];
           sections.forEach((item) => {
@@ -386,6 +393,20 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
           if (!frame) frame = window.requestAnimationFrame(updateToc);
         };
 
+        const scheduleNavigationRelease = () => {
+          if (!navigationTargetId) return;
+          window.clearTimeout(navigationReleaseTimer);
+          navigationReleaseTimer = window.setTimeout(() => {
+            navigationTargetId = '';
+            updateToc();
+          }, 140);
+        };
+
+        const handleScroll = () => {
+          scheduleUpdate();
+          scheduleNavigationRelease();
+        };
+
         links.forEach((link) => {
           link.addEventListener('click', (event) => {
             const id = link.dataset.headingId || '';
@@ -393,6 +414,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
             if (!target) return;
 
             event.preventDefault();
+            navigationTargetId = id;
             setActive(id);
             setOpen(false);
 
@@ -403,6 +425,7 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
               behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
               block: 'start',
             });
+            scheduleNavigationRelease();
           }, { signal });
         });
 
@@ -428,9 +451,10 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
         signal.addEventListener('abort', () => {
           compactQuery.removeEventListener('change', handleModeChange);
           if (frame) window.cancelAnimationFrame(frame);
+          window.clearTimeout(navigationReleaseTimer);
         }, { once: true });
 
-        window.addEventListener('scroll', scheduleUpdate, { passive: true, signal });
+        window.addEventListener('scroll', handleScroll, { passive: true, signal });
         window.addEventListener('resize', scheduleUpdate, { passive: true, signal });
         syncPanelAccessibility();
         updateToc();
@@ -799,25 +823,20 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     border-radius: 24px;
     background: var(--glass-fill);
     opacity: 1;
-    transform: none;
-    transform-origin: right center;
     transition:
-      opacity 280ms ease,
-      transform 420ms var(--ease-out),
-      border-color 220ms ease,
-      box-shadow 260ms ease;
+      opacity 140ms ease,
+      border-color 140ms ease,
+      box-shadow 160ms ease;
   }
 
   :global(.js) .article-toc {
     opacity: 0;
     pointer-events: none;
-    transform: translate3d(14px, 0, 0) scale(0.98);
   }
 
   :global(.js) .article-toc.is-visible {
     opacity: 1;
     pointer-events: auto;
-    transform: translate3d(0, 0, 0) scale(1);
   }
 
   .article-toc.is-visible:hover {
@@ -903,17 +922,15 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     line-height: 1.45;
     text-decoration: none;
     transition:
-      color 220ms ease,
-      border-color 220ms ease,
-      background-color 220ms ease,
-      transform 260ms var(--ease-out);
+      color 120ms ease,
+      border-color 120ms ease,
+      background-color 120ms ease;
   }
 
   .toc-link:hover {
     border-color: var(--glass-stroke-muted);
     background: var(--surface-soft);
     color: var(--text-primary);
-    transform: translateX(2px);
   }
 
   .toc-link-marker {
@@ -923,10 +940,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     border-radius: 999px;
     background: var(--border-strong);
     transition:
-      width 260ms var(--ease-out),
-      height 260ms var(--ease-out),
-      background-color 220ms ease,
-      box-shadow 260ms ease;
+      background-color 120ms ease,
+      box-shadow 120ms ease;
   }
 
   .toc-link-label {
@@ -934,7 +949,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    transition: transform 260ms var(--ease-out);
   }
 
   .toc-link.is-active {
@@ -945,14 +959,8 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
   }
 
   .toc-link.is-active .toc-link-marker {
-    width: 3px;
-    height: 15px;
     background: var(--accent);
     box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 58%, transparent);
-  }
-
-  .toc-link.is-active .toc-link-label {
-    transform: translateX(2px);
   }
 
   .toc-depth-3 {
@@ -1556,12 +1564,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
     :global(.js) .article-toc {
       display: block;
-      transform: translateY(10px) scale(0.96);
-      transform-origin: bottom right;
-    }
-
-    :global(.js) .article-toc.is-visible {
-      transform: translateY(0) scale(1);
     }
 
     .article-toc::after {
@@ -1591,14 +1593,12 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       transition:
         color 180ms ease,
         border-color 180ms ease,
-        background-color 180ms ease,
-        transform 220ms var(--ease-out);
+        background-color 180ms ease;
     }
 
     .toc-toggle:hover {
       border-color: var(--glass-stroke);
       background: var(--surface-solid);
-      transform: translateY(-2px);
     }
 
     .toc-toggle-icon,
@@ -1623,7 +1623,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
     .toc-toggle-chevron {
       color: var(--text-tertiary);
-      transition: transform 300ms var(--ease-out);
     }
 
     .article-toc.is-open .toc-toggle-chevron {
@@ -1645,21 +1644,17 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transform: translateY(10px) scale(0.97);
-      transform-origin: bottom right;
       -webkit-backdrop-filter: blur(26px) saturate(1.4);
       backdrop-filter: blur(26px) saturate(1.4);
       transition:
-        opacity 220ms ease,
-        visibility 220ms ease,
-        transform 340ms var(--ease-out);
+        opacity 140ms ease,
+        visibility 140ms ease;
     }
 
     .article-toc.is-open > .toc-panel {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
-      transform: translateY(0) scale(1);
     }
 
     .toc-nav {
