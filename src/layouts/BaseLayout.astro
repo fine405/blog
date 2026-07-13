@@ -361,7 +361,8 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
       }
 
       function initLayout() {
-        document.body.classList.remove('menu-open');
+        const menuIsOpen = document.getElementById('primary-navigation')?.classList.contains('open') ?? false;
+        document.body.classList.toggle('menu-open', menuIsOpen);
         initTheme();
         setupThemeToggle();
         setupMenuToggle();
@@ -1048,6 +1049,7 @@ const activeNavIndex = Math.max(navItems.findIndex((item) => isActive(item.href)
   @media (max-width: 860px) {
     .site-nav {
       grid-template-columns: 1fr auto;
+      overflow: visible;
     }
 
     .nav-links {
