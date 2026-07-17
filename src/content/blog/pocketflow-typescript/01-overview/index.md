@@ -1,6 +1,7 @@
 ---
 title: "PocketFlow.js 源码解析（一）：设计哲学与核心抽象"
 description: "介绍 PocketFlow.js 的设计理念，以及 Node 和 Flow 两大核心抽象的基本概念。"
+date: 2025-12-08T13:16:21+08:00
 tags: ["TypeScript", "LLM", "AI", "框架设计", "源码分析", "PocketFlow"]
 series: "PocketFlow.js 源码解析"
 seriesOrder: 1

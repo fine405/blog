@@ -1,6 +1,7 @@
 ---
 title: "[译] Claude Diary：让 Claude Code 从经验中学习并更新记忆"
 description: "通过日记和反思机制，将 Claude Code 的会话经验转化为持久的记忆规则，实现 AI 智能体的持续学习能力。"
+date: 2025-12-09T17:38:13+08:00
 tags: ["AI", "Claude", "智能体", "效率工具"]
 ---
 

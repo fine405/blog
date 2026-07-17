@@ -1,34 +1,7 @@
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
-const createdDateCache = new Map<string, Date | undefined>();
 const updatedDateCache = new Map<string, Date | undefined>();
-
-/**
- * 获取文件的 Git 首次提交时间（发布时间）
- */
-export function getGitCreatedDate(filePath: string): Date | undefined {
-  if (createdDateCache.has(filePath)) {
-    return createdDateCache.get(filePath);
-  }
-
-  try {
-    // --follow 追踪重命名，--diff-filter=A 只看添加操作
-    const out = execSync(
-      `git log --follow --format=%cI --diff-filter=A -- "${filePath}"`,
-      { encoding: 'utf8', cwd: process.cwd() }
-    ).trim();
-    // 可能有多行（如果文件被删除后重新添加），取最后一行（最早的）
-    const lines = out.split('\n').filter(Boolean);
-    const earliest = lines[lines.length - 1];
-    const date = earliest ? new Date(earliest) : undefined;
-    createdDateCache.set(filePath, date);
-    return date;
-  } catch {
-    createdDateCache.set(filePath, undefined);
-    return undefined;
-  }
-}
 
 /**
  * 获取文件的 Git 最后提交时间（更新时间）
@@ -63,22 +36,21 @@ export function getBlogFilePath(slug: string): string {
 /**
  * 获取博客的发布和更新时间
  * @param slug 博客的 slug
- * @param frontmatterDate frontmatter 中手动指定的发布时间（可选，作为兜底）
+ * @param frontmatterDate frontmatter 中指定的发布时间
  * @param frontmatterUpdatedDate frontmatter 中手动指定的更新时间（可选，作为兜底）
  */
 export function getBlogDates(
   slug: string,
-  frontmatterDate?: Date,
+  frontmatterDate: Date,
   frontmatterUpdatedDate?: Date,
   disableUpdateDate?: boolean
 ): { date: Date; updatedDate: Date | undefined } {
   const filePath = getBlogFilePath(slug);
   
-  // 发布时间以首次 Git 提交时间为准；frontmatter 仅在无 Git 历史时兜底
-  const gitCreated = getGitCreatedDate(filePath);
+  // 发布时间以内容元数据为准，避免浅克隆或历史重写改变文章顺序
   const gitUpdated = getGitUpdatedDate(filePath);
   
-  const date = gitCreated ?? frontmatterDate ?? new Date();
+  const date = frontmatterDate;
   
   // 如果禁用更新时间，直接返回
   if (disableUpdateDate) {

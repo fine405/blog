@@ -1,6 +1,7 @@
 ---
 title: "完全掌握 TypeScript satisfies 操作符"
 description: "深入理解 TypeScript 4.9 引入的 satisfies 操作符，掌握类型验证与类型推断的完美平衡。"
+date: 2025-12-03T18:52:15+08:00
 tags: ["TypeScript", "前端"]
 ---
 

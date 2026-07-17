@@ -8,8 +8,8 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    // date 和 updatedDate 是无 Git 历史时的可选兜底值
-    date: dateTimeSchema.optional(),
+    // 发布时间必须显式声明，避免部署环境中的 Git 历史影响文章排序
+    date: dateTimeSchema,
     updatedDate: dateTimeSchema.optional(),
     // 禁用更新时间显示，排序时只用发布时间
     disableUpdateDate: z.boolean().optional().default(false),

@@ -1,6 +1,7 @@
 ---
 title: "PocketFlow.js 源码解析（二）：Node 深度解析"
 description: "深入分析 BaseNode 的三阶段生命周期设计，以及 Node 类的重试机制实现。"
+date: 2025-12-08T13:19:18+08:00
 tags: ["TypeScript", "LLM", "AI", "框架设计", "源码分析", "PocketFlow"]
 series: "PocketFlow.js 源码解析"
 seriesOrder: 2

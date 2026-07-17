@@ -1,6 +1,7 @@
 ---
 title: "拒绝服务雪崩：详解指数退避与随机抖动"
 description: "深入探讨如何通过指数退避 (Exponential Backoff) 和随机抖动 (Jitter) 解决惊群效应，实现系统级的平滑流量控制。"
+date: 2025-12-10T11:30:24+08:00
 tags: ["TypeScript", "前端", "分布式系统"]
 ---
 

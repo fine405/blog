@@ -1,6 +1,7 @@
 ---
 title: "生产力革命：用 AI 编程工具将代码提交自动转化为技术博客"
 description: "介绍一种利用 AI 编程工具的自动化工作流，通过配置 Prompt 规则，让 AI 帮你把 Git Diff 瞬间转化为高质量的技术博客。适用于 Cursor、Windsurf、Kiro 等 AI IDE 以及 Claude Code 等 CLI 工具。"
+date: 2025-12-09T14:46:21+08:00
 tags: ["AI", "效率工具", "写作", "开发工具"]
 ---
 

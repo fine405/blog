@@ -1,6 +1,7 @@
 ---
 title: "PocketFlow.js 源码解析（三）：Flow 深度解析"
 description: "深入分析 Flow 的编排机制，以及 BatchNode、ParallelBatchNode、BatchFlow 的批处理实现。"
+date: 2025-12-08T13:21:18+08:00
 tags: ["TypeScript", "LLM", "AI", "框架设计", "源码分析", "PocketFlow"]
 series: "PocketFlow.js 源码解析"
 seriesOrder: 3
