@@ -7,7 +7,6 @@ import {
   ChevronUp,
   Clock3,
   ListTree,
-  RefreshCw,
 } from '@lucide/astro';
 import ImageLightbox from '../../components/ImageLightbox.astro';
 import { getBlogDates } from '../../utils/git-dates';
@@ -137,12 +136,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
           <CalendarDays size={15} stroke-width={1.8} aria-hidden="true" />
           <span class="local-time">{fallbackDate}</span>
         </time>
-        {updatedDate && (
-          <span class="updated" data-updated={updatedDate.toISOString()}>
-            <RefreshCw size={14} stroke-width={1.8} aria-hidden="true" />
-            <span class="relative-time">近期</span>更新
-          </span>
-        )}
         <span class="reading-time">
           <Clock3 size={15} stroke-width={1.8} aria-hidden="true" />
           阅读约 {readingTime} 分钟
@@ -207,21 +200,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
 
   <script is:inline>
     (function() {
-      function formatRelativeTime(date) {
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 1) return '刚刚';
-        if (minutes < 60) return minutes + ' 分钟前';
-        if (hours < 24) return hours + ' 小时前';
-        if (days < 30) return days + ' 天前';
-        if (days < 365) return Math.floor(days / 30) + ' 个月前';
-        return Math.floor(days / 365) + ' 年前';
-      }
-
       function formatLocalTime(date) {
         return date.toLocaleDateString('zh-CN', {
           year: 'numeric',
@@ -236,17 +214,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
           var dateStr = timeEl.getAttribute('datetime');
           var localTimeEl = timeEl.querySelector('.local-time');
           if (dateStr && localTimeEl) localTimeEl.textContent = formatLocalTime(new Date(dateStr));
-        }
-
-        var updatedEl = document.querySelector('.updated[data-updated]');
-        if (updatedEl) {
-          var updateDateStr = updatedEl.getAttribute('data-updated');
-          if (updateDateStr) {
-            var updateDate = new Date(updateDateStr);
-            updatedEl.setAttribute('title', '更新于 ' + formatLocalTime(updateDate));
-            var relativeTimeEl = updatedEl.querySelector('.relative-time');
-            if (relativeTimeEl) relativeTimeEl.textContent = formatRelativeTime(updateDate);
-          }
         }
       }
 
@@ -1094,14 +1061,6 @@ const fallbackDate = date.toLocaleDateString('zh-CN', {
     display: inline-flex;
     align-items: center;
     gap: 0.42rem;
-  }
-
-  .updated {
-    padding: 0.28rem 0.52rem;
-    border-radius: 7px;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-    font-weight: 620;
   }
 
   .tags {

@@ -2,23 +2,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { ArrowUpRight, Clock3, FileText } from '@lucide/astro';
-import { getBlogDates } from '../../utils/git-dates';
 
 const rawPosts = await getCollection('blog', ({ data }) => {
   return import.meta.env.DEV || !data.draft;
 });
 
-const posts = rawPosts.map((post) => {
-  const { date, updatedDate } = getBlogDates(
-    post.slug,
-    post.data.date,
-    post.data.updatedDate,
-    post.data.disableUpdateDate
-  );
-  return { ...post, date, updatedDate };
-}).sort((a, b) => {
-  const aTime = a.date.valueOf();
-  const bTime = b.date.valueOf();
+const posts = rawPosts.sort((a, b) => {
+  const aTime = a.data.date.valueOf();
+  const bTime = b.data.date.valueOf();
   if (bTime !== aTime) return bTime - aTime;
   return a.data.title.localeCompare(b.data.title, 'zh-CN');
 });
@@ -50,15 +41,10 @@ const posts = rawPosts.map((post) => {
           <span class="post-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <article>
             <div class="meta">
-              <time datetime={post.date.toISOString()} class="publish-time">
+              <time datetime={post.data.date.toISOString()} class="publish-time">
                 <Clock3 size={14} stroke-width={1.8} aria-hidden="true" />
-                <span class="local-time">{post.date.toLocaleDateString('zh-CN')}</span>
+                <span class="local-time">{post.data.date.toLocaleDateString('zh-CN')}</span>
               </time>
-              {post.updatedDate && (
-                <span class="updated" data-updated={post.updatedDate.toISOString()}>
-                  <span class="relative-time">近期</span>更新
-                </span>
-              )}
             </div>
             <h2>{post.data.title}</h2>
             <p class="excerpt">{post.data.description}</p>
@@ -210,14 +196,6 @@ const posts = rawPosts.map((post) => {
     gap: 0.38rem;
   }
 
-  .updated {
-    padding: 0.22rem 0.48rem;
-    border-radius: 6px;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-    font-weight: 620;
-  }
-
   .post-list h2 {
     color: var(--text-primary);
     font-size: clamp(1.15rem, 2.2vw, 1.48rem);
@@ -320,21 +298,6 @@ const posts = rawPosts.map((post) => {
 
 <script is:inline>
   (function() {
-    function formatRelativeTime(date) {
-      var now = new Date();
-      var diff = now.getTime() - date.getTime();
-      var minutes = Math.floor(diff / 60000);
-      var hours = Math.floor(diff / 3600000);
-      var days = Math.floor(diff / 86400000);
-
-      if (minutes < 1) return '刚刚';
-      if (minutes < 60) return minutes + ' 分钟前';
-      if (hours < 24) return hours + ' 小时前';
-      if (days < 30) return days + ' 天前';
-      if (days < 365) return Math.floor(days / 30) + ' 个月前';
-      return Math.floor(days / 365) + ' 年前';
-    }
-
     function formatLocalTime(date) {
       return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
     }
@@ -344,15 +307,6 @@ const posts = rawPosts.map((post) => {
         var dateStr = el.getAttribute('datetime');
         var localTimeEl = el.querySelector('.local-time');
         if (dateStr && localTimeEl) localTimeEl.textContent = formatLocalTime(new Date(dateStr));
-      });
-
-      document.querySelectorAll('.updated[data-updated]').forEach(function(el) {
-        var dateStr = el.getAttribute('data-updated');
-        if (!dateStr) return;
-        var date = new Date(dateStr);
-        el.setAttribute('title', '更新于 ' + formatLocalTime(date));
-        var relativeTimeEl = el.querySelector('.relative-time');
-        if (relativeTimeEl) relativeTimeEl.textContent = formatRelativeTime(date);
       });
     }
 
